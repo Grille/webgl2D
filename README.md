@@ -1,4 +1,4 @@
-# wasm2D
+# webgl2D
 2d webgl library (very experimental)
 <br>
 ## Features
