@@ -26,7 +26,7 @@ render the image<br>
   
   //add image to render list
   //(texture,src:[posX,posY,width,height],dst:[posX,posY,width,height])
-  gl2D.addImage(testTexture,[0,0,64,64],[50,50,100,100]);
+  gl2D.addImage(texture,[0,0,64,64],[50,50,100,100]);
   
   //compile buffers
   gl2D.endScene();
