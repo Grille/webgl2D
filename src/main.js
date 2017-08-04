@@ -3,6 +3,8 @@ let testTexture;
 let testTexture2;
 let width,height
 let gl2D;
+let angle = 0;
+
 function main(){
   let canvas = document.getElementById("canvas");
   canvas.width = width = window.innerWidth;
@@ -24,22 +26,28 @@ function render(){
 
   // gl.clearColor(0.2, 0.2, 1, 1);
   // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-  let color = [255,255,255,255];
+  //let color = [255,255,255,255];
   gl2D.startScene();
 
 
   for (let ix = 0;ix < width/64-1;ix++){
     for (let iy = 0;iy < height/32-1;iy++){
-      gl2D.addImage(testTexture,[0,0,64,32],[ix*64,iy*32,64,32],[ix,iy,255,255]);
+      gl2D.addImage(testTexture,[0,0,64,32],[ix*64,iy*32,64,32],[ix*iy,0,255,255]);
 
     }
   }
+  angle++;
+  gl2D.matrix.setRotate(angle);
   for (let ix = 0;ix < width/64-1;ix++){
     for (let iy = 0;iy < height/32-1;iy++){
-      gl2D.addImage(testTexture2,[0,0,64,32],[ix*64,iy*32,64,32],color);
+      gl2D.matrix.setTranslate([ix*64+32,iy*32+16])
+      let color = [100,ix*iy+angle,255,255];
+      while (color[1]>255)color[1]-=255;
+      gl2D.addImage(testTexture2,[0,0,64,64],[-16,-16,32,32],color);
 
     }
   }
+  gl2D.matrix.reset();
   // gl2D.matrix.setTranslate([64,64]);
   // gl2D.matrix.addRotate(1);
 
