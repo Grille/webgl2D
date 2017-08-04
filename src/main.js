@@ -13,8 +13,10 @@ function main(){
   render();
 }
 function loadImages(){
-   testTexture = gl2D.loadTexture("./assets/test.png");
-   testTexture2 = gl2D.loadTexture("./assets/test2.png");
+   testTexture = gl2D.textureFromFile("./assets/test.png");
+   testTexture2 = gl2D.textureFromFile("./assets/test2.png");
+   console.log(testTexture2.width);
+   //testTexture2 = gl2D.textureFromFile("./assets/test2.png");
 }
 function render(){
   let date = Date.now();
@@ -22,25 +24,26 @@ function render(){
 
   // gl.clearColor(0.2, 0.2, 1, 1);
   // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-  let color = [1,1,1,1];
+  let color = [255,255,255,255];
   gl2D.startScene();
-  for (let ix = 0;ix < width/64-1;ix++){
-    for (let iy = 0;iy < height/32-1;iy++){
-      gl2D.addImage(testTexture,[0,0,64,32],[ix*64,iy*32,64,32],color);
-      //gl2D.addImage(testTexture2,[0,0,64,32],[ix*64,iy*32,64,32],color);
-    // gl2D.drawImage(testTexture,[0,0,64,32],[ix*64,iy*32,64,32]);
-    // gl2D.drawImage(testTexture2,[0,0,64,32],[ix*64,iy*32,64,32]);
-    }
-  }
-  //gl2D.addImage(testTexture,[0,0,64,32],[ix*64,iy*32,64,32],color);
-  gl2D.addImage(testTexture,[0,0,64,32],[64,32,64,32],[0,1,1,1]);
-  gl2D.addImage(testTexture2,[0,0,64,32],[0,0,64,32],color);
+
+
+  // for (let ix = 0;ix < width/64-1;ix++){
+  //   for (let iy = 0;iy < height/32-1;iy++){
+  //     gl2D.addImage(testTexture,[0,0,64,32],[ix*64,iy*32,64,32],color);
+  //     gl2D.addImage(testTexture2,[0,0,64,32],[ix*64,iy*32,64,32],color);
+
+  //   }
+  // }
+  gl2D.matrix.setTranslate([64,64]);
+  gl2D.matrix.addRotate(1);
+  gl2D.addImage(testTexture,[0,0,64,32],[-32,-16,64,32],color);
+
   gl2D.endScene();
   gl2D.renderScene();
-//drawImage(testTexture,[0,0,64,32],[0,0,64,32]);
-       //gl2D.drawImage(testTexture,[0,0,64,32],[0,0,64,32]);
+
   date = Date.now();
   let now = date - last;
   console.log(now);
-  setTimeout(render, 500);
+  setTimeout(render, 10);
 }
