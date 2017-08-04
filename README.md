@@ -27,11 +27,25 @@ render the image<br>
   
   //add image to render list
   //(texture,src:[posX,posY,width,height],dst:[posX,posY,width,height],color:[r,g,b,a])
-  gl2D.addImage(texture,[0,0,64,64],[50,50,100,100],[255,255,255,255]);
+  gl2D.addImage(texture,[0,0,64,64],[-32,-32,64,64],color);
   
   //bind buffers
   gl2D.endScene();
   
   //render images
   gl2D.renderScene();
+````
+use matrix<br>
+````js
+  //Set new center for coordinate system
+  gl2D.matrix.setTranslate([64,64]);
+  
+  //add to current values
+  gl2D.matrix.addTranslate([64,64]);
+  
+  //rotates around the center
+  gl2D.matrix.addRotate(10);
+  
+  //reset matrix
+  gl2D.matrix.reset();
 ````
