@@ -28,16 +28,22 @@ function render(){
   gl2D.startScene();
 
 
-  // for (let ix = 0;ix < width/64-1;ix++){
-  //   for (let iy = 0;iy < height/32-1;iy++){
-  //     gl2D.addImage(testTexture,[0,0,64,32],[ix*64,iy*32,64,32],color);
-  //     gl2D.addImage(testTexture2,[0,0,64,32],[ix*64,iy*32,64,32],color);
+  for (let ix = 0;ix < width/64-1;ix++){
+    for (let iy = 0;iy < height/32-1;iy++){
+      gl2D.addImage(testTexture,[0,0,64,32],[ix*64,iy*32,64,32],[ix,iy,255,255]);
 
-  //   }
-  // }
-  gl2D.matrix.setTranslate([64,64]);
-  gl2D.matrix.addRotate(1);
-  gl2D.addImage(testTexture,[0,0,64,32],[-32,-16,64,32],color);
+    }
+  }
+  for (let ix = 0;ix < width/64-1;ix++){
+    for (let iy = 0;iy < height/32-1;iy++){
+      gl2D.addImage(testTexture2,[0,0,64,32],[ix*64,iy*32,64,32],color);
+
+    }
+  }
+  // gl2D.matrix.setTranslate([64,64]);
+  // gl2D.matrix.addRotate(1);
+
+  // gl2D.addImage(testTexture,[0,0,64,32],[-32,-16,64,32],color);
 
   gl2D.endScene();
   gl2D.renderScene();

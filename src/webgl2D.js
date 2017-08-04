@@ -16,7 +16,9 @@ function webGL2DStart(canvas) {
       vertexColorBuffer:null,
       vertexIndexBuffer:null,
       curOffset: 0,
-      lastTexture: 0,
+      lastTexture: null,
+      textureContinuous:[],
+      textureOffset: 0,
 
       translate:[0,0],
       angle:0,
@@ -133,6 +135,9 @@ function webGL2DStart(canvas) {
         gl2D.vertexIndex = [];
         gl2D.textureList = [];
         gl2D.curOffset = 0;
+        gl2D.lastTexture = null;
+        gl2D.textureContinuous = [];
+        gl2D.textureOffset = -1;
       },
 
       addImage: (texture,src,dst,inputColor) => {
@@ -149,24 +154,21 @@ function webGL2DStart(canvas) {
         let 
           pos1X = (dst[0] * cos - dst[3] * sin)+translate[0],
           pos1Y = (dst[3] * cos + dst[0] * sin)+translate[1],
-
           pos2X = (dst[2] * cos - dst[3] * sin)+translate[0],
           pos2Y = (dst[3] * cos + dst[2] * sin)+translate[1],
-
           pos3X = (dst[2] * cos - dst[1] * sin)+translate[0],
           pos3Y = (dst[1] * cos + dst[2] * sin)+translate[1],
-
           pos4X = (dst[0] * cos - dst[1] * sin)+translate[0],
           pos4Y = (dst[1] * cos + dst[0] * sin)+translate[1];
 
-          pos1X = -1+pos1X/sceneWidth*2,
-          pos1Y = +1-pos1Y/sceneHeight*2,
-          pos2X = -1+pos2X/sceneWidth*2,
-          pos2Y = +1-pos2Y/sceneHeight*2,
-          pos3X = -1+pos3X/sceneWidth*2,
-          pos3Y = +1-pos3Y/sceneHeight*2,
-          pos4X = -1+pos4X/sceneWidth*2,
-          pos4Y = +1-pos4Y/sceneHeight*2;
+        pos1X = -1+pos1X/sceneWidth*2;
+        pos1Y = +1-pos1Y/sceneHeight*2;
+        pos2X = -1+pos2X/sceneWidth*2;
+        pos2Y = +1-pos2Y/sceneHeight*2;
+        pos3X = -1+pos3X/sceneWidth*2;
+        pos3Y = +1-pos3Y/sceneHeight*2;
+        pos4X = -1+pos4X/sceneWidth*2;
+        pos4Y = +1-pos4Y/sceneHeight*2;
         let
           startsrcX = src[0] / imageWidth,
           endsrcX = (src[0] + src[2]) / imageWidth,
@@ -222,9 +224,15 @@ function webGL2DStart(canvas) {
         gl2D.vertexIndex[offset*6+4] = offset*4+2;
         gl2D.vertexIndex[offset*6+5] = offset*4+3;
 
-        gl2D.textureList[offset] = texture;
+        if (texture != gl2D.lastTexture){
+        gl2D.textureOffset++;
+        gl2D.lastTexture = texture;
+        gl2D.textureList[gl2D.textureOffset] = texture;
+        gl2D.textureContinuous[gl2D.textureOffset] = 0;
+        }
+        gl2D.textureContinuous[gl2D.textureOffset] +=2;
 
-        gl2D.curOffset++;
+        gl2D.curOffset+=1;
       },
       endScene: () => {
         let gl = gl2D.gl;
@@ -243,7 +251,6 @@ function webGL2DStart(canvas) {
         gl2D.vertexIndexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl2D.vertexIndexBuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(gl2D.vertexIndex), gl.STATIC_DRAW);
-        gl2D.vertexIndexBuffer.numItems = gl2D.curOffset*6;
 
         gl.bindBuffer(gl.ARRAY_BUFFER, gl2D.vertexPositionBuffer);
         gl.vertexAttribPointer(gl2D.shaderProgram.vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
@@ -259,17 +266,17 @@ function webGL2DStart(canvas) {
       renderScene: () => {
         let gl = gl2D.gl;
 
-        // gl.uniform1i(shaderProgram.samplerUniform, 0);
-
-        //gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
-        //setMatrixUniforms();
-        for (let i = 0;i<gl2D.curOffset;i++){
+        let it = 0;
+        let offset = 0;
+        let amount = 0;
+        while (it <= gl2D.textureOffset){
+          amount = gl2D.textureContinuous[it]
           gl.activeTexture(gl.TEXTURE0);
-          gl.bindTexture(gl.TEXTURE_2D, gl2D.textureList[i]);
-          gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, i*6*2);
+          gl.bindTexture(gl.TEXTURE_2D, gl2D.textureList[it]);
+          gl.drawElements(gl.TRIANGLES, 3*amount, gl.UNSIGNED_SHORT, offset*6*1);
+          offset+=amount;
+          it++;
         };
-        // gl.bindTexture(gl.TEXTURE_2D, gl2D.textureList[0]);
-        // gl.drawElements(gl.TRIANGLES, 6*(gl2D.curOffset), gl.UNSIGNED_SHORT, 0*6);
       },
 
       matrix: {
