@@ -8,8 +8,9 @@ Easy drawing images with webGL<br>
 On firefox ineffective<br>
 
 ## Use
+### basic
 Add webgl2D.js to you files<br>
-get context class with webGL2DStart<br>
+get context with webGL2DStart<br>
 ````js
   let canvas = document.getElementById("canvas");
   let gl2D = webGL2DStart(canvas);
@@ -17,7 +18,7 @@ get context class with webGL2DStart<br>
 load a texture<br>
 ````js
   //texture must be a potency of 2 (32, 64, 128, etc)
-  let texture = gl2D.loadTexture("./assets/texture.png");
+  let texture = gl2D.textureFromFile("./assets/texture.png");
 ````
 render the image<br>
 ````js
@@ -25,10 +26,10 @@ render the image<br>
   gl2D.startScene();
   
   //add image to render list
-  //(texture,src:[posX,posY,width,height],dst:[posX,posY,width,height])
-  gl2D.addImage(texture,[0,0,64,64],[50,50,100,100]);
+  //(texture,src:[posX,posY,width,height],dst:[posX,posY,width,height],color:[r,g,b,a])
+  gl2D.addImage(texture,[0,0,64,64],[50,50,100,100],[255,255,255,255]);
   
-  //compile buffers
+  //bind buffers
   gl2D.endScene();
   
   //render images
