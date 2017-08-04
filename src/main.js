@@ -22,15 +22,19 @@ function render(){
 
   // gl.clearColor(0.2, 0.2, 1, 1);
   // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  let color = [1,1,1,1];
   gl2D.startScene();
   for (let ix = 0;ix < width/64-1;ix++){
     for (let iy = 0;iy < height/32-1;iy++){
-      gl2D.addImage(testTexture,[0,0,64,32],[ix*64,iy*32,64,32]);
-      gl2D.addImage(testTexture2,[0,0,64,32],[ix*64,iy*32,64,32]);
+      gl2D.addImage(testTexture,[0,0,64,32],[ix*64,iy*32,64,32],color);
+      //gl2D.addImage(testTexture2,[0,0,64,32],[ix*64,iy*32,64,32],color);
     // gl2D.drawImage(testTexture,[0,0,64,32],[ix*64,iy*32,64,32]);
     // gl2D.drawImage(testTexture2,[0,0,64,32],[ix*64,iy*32,64,32]);
     }
   }
+  //gl2D.addImage(testTexture,[0,0,64,32],[ix*64,iy*32,64,32],color);
+  gl2D.addImage(testTexture,[0,0,64,32],[64,32,64,32],[0,1,1,1]);
+  gl2D.addImage(testTexture2,[0,0,64,32],[0,0,64,32],color);
   gl2D.endScene();
   gl2D.renderScene();
 //drawImage(testTexture,[0,0,64,32],[0,0,64,32]);
