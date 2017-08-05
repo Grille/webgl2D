@@ -39,10 +39,8 @@ let counter = 0;
   for (let ix = 0;ix < width/64;ix++){
     for (let iy = 0;iy < height/32;iy++){
       gl2D.addImage(testTexture,[0,0,64,32],[ix*64,iy*32,64,32],[ix*iy,0,255,255]);
-      counter++;
     }
   }
-  angle++;
   for (let ix = 0;ix < width/64;ix++){
     for (let iy = 0;iy < height/32;iy++){
       gl2D.matrix.setTranslate([ix*64+32,iy*32+16])
@@ -50,9 +48,12 @@ let counter = 0;
       while (color[1]>255)color[1]-=255;
       gl2D.matrix.setRotate(angle+ix*iy);
       gl2D.addImage(testTexture2,[0,0,64,64],[-16,-16,32,32],color);
+      gl2D.matrix.reset();
       counter++;
     }
   }
+  gl2D.addQuadImage(testTexture,[0,0,64,32],[64,128,128,100, 128,64,64,64],[0,255,0,255]);
+  angle++;
   gl2D.matrix.reset();
   tmpdate = Date.now();
   tmpnow = tmpdate - tmplast;
@@ -74,5 +75,5 @@ let counter = 0;
   let now = date - last;
   console.log("total time = "+now);
   console.log("--size("+counter+")---------------------------------------");
-  setTimeout(render, 10);
+  setTimeout(render, 100);
 }
