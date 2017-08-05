@@ -52,7 +52,7 @@ let counter = 0;
       counter++;
     }
   }
-  gl2D.addQuadImage(testTexture,[0,0,64,32],[64,128,128,100, 128,64,64,64],[0,255,0,255]);
+  //gl2D.addQuadImage(testTexture,[0,0,64,32],[64,128,128,100, 128,64,64,64],[0,255,0,255]);
   angle++;
   gl2D.matrix.reset();
   tmpdate = Date.now();
@@ -75,5 +75,5 @@ let counter = 0;
   let now = date - last;
   console.log("total time = "+now);
   console.log("--size("+counter+")---------------------------------------");
-  setTimeout(render, 100);
+  setTimeout(render, 10);
 }
