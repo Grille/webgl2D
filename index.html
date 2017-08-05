@@ -4,7 +4,12 @@
         <script type="text/javascript" src="src/webgl2D.js"></script>
         <script type="text/javascript" src="src/main.js"></script>
    </head>
-    <body onload="main();">
-        <canvas id="canvas" style="border: none; position: absolute;" width="500" height="500"></canvas>
+
+     <!--<body style="overflow: hidden; margin: 0; background: rgba(0,0,0,1)"; oncontextmenu="return false"; id="body">
+    <canvas style="position: absolute; left: 0px" id="canvasGround"></canvas>
+    <canvas style="position: absolute; left: 0px" id="canvas"></canvas>-->
+
+    <body onload="main();" style="overflow: hidden; margin: 0; background: rgba(0,0,0,1)"; oncontextmenu="return false";>
+        <canvas id="canvas" style="border: none; position: absolute; left: 0px;" width="500" height="500"></canvas>
     </body>
 </html>

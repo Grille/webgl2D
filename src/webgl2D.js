@@ -22,6 +22,8 @@ function webGL2DStart(canvas) {
 
       translate:[0,0],
       angle:0,
+      sin:0,
+      cos:0,
 
     //--public--
       initShaders: ()=>{
@@ -112,8 +114,11 @@ function webGL2DStart(canvas) {
         texture.image.src = path;
         return texture;
       },
-      textureFromPixelArray: (dataArray, type, width, height) => {
+      textureFromPixelArray: (dataArray, width, height) => {
         let gl = gl2D.gl;
+        let type = gl.RGB;
+        // if (dataArray.lenght / (width * height)==3) type = gl.RGB;
+        // else type = gl.RGBA;
         let texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texImage2D(gl.TEXTURE_2D, 0, type, width, height, 0, type, gl.UNSIGNED_BYTE, dataArray);
@@ -129,63 +134,68 @@ function webGL2DStart(canvas) {
       },
 
       startScene: () => {
-        gl2D.vertexPosition = [];
-        gl2D.vertexTextureCoord = [];
-        gl2D.vertexColor = [];
-        gl2D.vertexIndex = [];
+
+        // gl2D.vertexPosition = [];
+        // gl2D.vertexTextureCoord = [];
+        // gl2D.vertexColor = [];
+        // gl2D.vertexIndex = [];
+        // gl2D.textureList = [];
+        // gl2D.textureContinuous = [];
+        let size = 20000;
+
+        gl2D.vertexPosition = new Float32Array(size*12);
+        gl2D.vertexTextureCoord = new Float32Array(size*8);
+        gl2D.vertexColor = new Float32Array(size*16);
+        gl2D.vertexIndex = new Uint16Array(size*6);
         gl2D.textureList = [];
+        gl2D.textureContinuous = new Uint16Array(size);
+
         gl2D.curOffset = 0;
         gl2D.lastTexture = null;
-        gl2D.textureContinuous = [];
         gl2D.textureOffset = -1;
       },
-
+      useMatrix: (dst) => {
+        let gl = gl2D.gl;
+        let translate = gl2D.translate;
+        let sin = gl2D.sin, cos = gl2D.cos;
+        let sceneWidth = gl.viewportWidth, sceneHeight = gl.viewportHeight;
+        return [
+          -1+((dst[0] * cos - dst[1] * sin)+translate[0])/sceneWidth*2,
+          +1-((dst[1] * cos + dst[0] * sin)+translate[1])/sceneHeight*2,
+          -1+((dst[2] * cos - dst[3] * sin)+translate[0])/sceneWidth*2,
+          +1-((dst[3] * cos + dst[2] * sin)+translate[1])/sceneHeight*2,
+          -1+((dst[4] * cos - dst[5] * sin)+translate[0])/sceneWidth*2,
+          +1-((dst[5] * cos + dst[4] * sin)+translate[1])/sceneHeight*2,
+          -1+((dst[6] * cos - dst[7] * sin)+translate[0])/sceneWidth*2,
+          +1-((dst[7] * cos + dst[6] * sin)+translate[1])/sceneHeight*2,
+        ];
+      },
       addImage: (texture,src,dst,inputColor) => {
         let gl = gl2D.gl;
-        let mtrx = gl2D.matrix;
         let offset = gl2D.curOffset;
         let translate = gl2D.translate;
-        let sceneWidth = gl.viewportWidth, sceneHeight = gl.viewportHeight;
-        let imageWidth = texture.width, imageHeight = texture.height;
         let color = [inputColor[0]/255,inputColor[1]/255,inputColor[2]/255,inputColor[3]/255];
         dst[2]+=dst[0];dst[3]+=dst[1];
-        let midx = 0,midy = 0;
-        let sin = Math.sin(gl2D.angle * 3.14159265 / 180), cos = Math.cos(gl2D.angle * 3.14159265 / 180);
-        let 
-          pos1X = (dst[0] * cos - dst[3] * sin)+translate[0],
-          pos1Y = (dst[3] * cos + dst[0] * sin)+translate[1],
-          pos2X = (dst[2] * cos - dst[3] * sin)+translate[0],
-          pos2Y = (dst[3] * cos + dst[2] * sin)+translate[1],
-          pos3X = (dst[2] * cos - dst[1] * sin)+translate[0],
-          pos3Y = (dst[1] * cos + dst[2] * sin)+translate[1],
-          pos4X = (dst[0] * cos - dst[1] * sin)+translate[0],
-          pos4Y = (dst[1] * cos + dst[0] * sin)+translate[1];
+        let dstPos = gl2D.useMatrix([dst[0],dst[3],dst[2],dst[3],dst[2],dst[1],dst[0],dst[1]]);
 
-        pos1X = -1+pos1X/sceneWidth*2;
-        pos1Y = +1-pos1Y/sceneHeight*2;
-        pos2X = -1+pos2X/sceneWidth*2;
-        pos2Y = +1-pos2Y/sceneHeight*2;
-        pos3X = -1+pos3X/sceneWidth*2;
-        pos3Y = +1-pos3Y/sceneHeight*2;
-        pos4X = -1+pos4X/sceneWidth*2;
-        pos4Y = +1-pos4Y/sceneHeight*2;
+        let imageWidth = texture.width, imageHeight = texture.height;
         let
           startsrcX = src[0] / imageWidth,
           endsrcX = (src[0] + src[2]) / imageWidth,
-          startsrcY = 1- (src[1] + src[3]) / imageHeight,
-          endsrcY = 1- src[1] / imageHeight;
+          startsrcY = src[1] / imageHeight,
+          endsrcY = (src[1] + src[3]) / imageHeight;
 
-        gl2D.vertexPosition[offset*3*4+0] = pos1X;//ul
-        gl2D.vertexPosition[offset*3*4+1] = pos1Y;
+        gl2D.vertexPosition[offset*3*4+0] = dstPos[0];//ul
+        gl2D.vertexPosition[offset*3*4+1] = dstPos[1];
         gl2D.vertexPosition[offset*3*4+2] = 0;
-        gl2D.vertexPosition[offset*3*4+3] = pos2X;//ur
-        gl2D.vertexPosition[offset*3*4+4] = pos2Y;
+        gl2D.vertexPosition[offset*3*4+3] = dstPos[2];//ur
+        gl2D.vertexPosition[offset*3*4+4] = dstPos[3];
         gl2D.vertexPosition[offset*3*4+5] = 0;
-        gl2D.vertexPosition[offset*3*4+6] = pos3X;//or
-        gl2D.vertexPosition[offset*3*4+7] = pos3Y;
+        gl2D.vertexPosition[offset*3*4+6] = dstPos[4];//or
+        gl2D.vertexPosition[offset*3*4+7] = dstPos[5];
         gl2D.vertexPosition[offset*3*4+8] = 0;
-        gl2D.vertexPosition[offset*3*4+9] = pos4X;//ol
-        gl2D.vertexPosition[offset*3*4+10] = pos4Y;
+        gl2D.vertexPosition[offset*3*4+9] = dstPos[6];//ol
+        gl2D.vertexPosition[offset*3*4+10] = dstPos[7];
         gl2D.vertexPosition[offset*3*4+11] = 0;
 
         gl2D.vertexTextureCoord[offset*2*4+0] = startsrcX;
@@ -238,19 +248,19 @@ function webGL2DStart(canvas) {
         let gl = gl2D.gl;
         gl2D.vertexPositionBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, gl2D.vertexPositionBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(gl2D.vertexPosition), gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, gl2D.vertexPosition, gl.STATIC_DRAW);
 
         gl2D.vertexColorBuffer = gl.createBuffer ();
         gl.bindBuffer(gl.ARRAY_BUFFER, gl2D.vertexColorBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(gl2D.vertexColor), gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, gl2D.vertexColor, gl.STATIC_DRAW);
 
         gl2D.vertexTextureCoordBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, gl2D.vertexTextureCoordBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(gl2D.vertexTextureCoord), gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, gl2D.vertexTextureCoord, gl.STATIC_DRAW);
 
         gl2D.vertexIndexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl2D.vertexIndexBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(gl2D.vertexIndex), gl.STATIC_DRAW);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, gl2D.vertexIndex, gl.STATIC_DRAW);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, gl2D.vertexPositionBuffer);
         gl.vertexAttribPointer(gl2D.shaderProgram.vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
@@ -289,13 +299,16 @@ function webGL2DStart(canvas) {
         },
         setRotate: (angle) => {
           gl2D.angle = angle;
+          gl2D.sin = Math.sin(gl2D.angle * 3.14159265 / 180), gl2D.cos = Math.cos(gl2D.angle * 3.14159265 / 180);
         },
         addRotate: (angle) => {
           gl2D.angle += angle;
+          gl2D.sin = Math.sin(gl2D.angle * 3.14159265 / 180), gl2D.cos = Math.cos(gl2D.angle * 3.14159265 / 180);
         },
         reset: () => {
           gl2D.translate = [0,0];
           gl2D.angle = 0;
+          gl2D.sin = Math.sin(gl2D.angle * 3.14159265 / 180), gl2D.cos = Math.cos(gl2D.angle * 3.14159265 / 180);
         },
       },
   };
