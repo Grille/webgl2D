@@ -141,14 +141,13 @@ function webGL2DStart(canvas) {
         // gl2D.vertexIndex = [];
         // gl2D.textureList = [];
         // gl2D.textureContinuous = [];
-        let size = 20000;
 
-        gl2D.vertexPosition = new Float32Array(size*12);
-        gl2D.vertexTextureCoord = new Float32Array(size*8);
-        gl2D.vertexColor = new Float32Array(size*16);
-        gl2D.vertexIndex = new Uint16Array(size*6);
+        gl2D.vertexPosition = [];
+        gl2D.vertexTextureCoord = [];
+        gl2D.vertexColor = [];
+        gl2D.vertexIndex = [];
         gl2D.textureList = [];
-        gl2D.textureContinuous = new Uint16Array(size);
+        gl2D.textureContinuous = [];
 
         gl2D.curOffset = 0;
         gl2D.lastTexture = null;
@@ -248,19 +247,19 @@ function webGL2DStart(canvas) {
         let gl = gl2D.gl;
         gl2D.vertexPositionBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, gl2D.vertexPositionBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, gl2D.vertexPosition, gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(gl2D.vertexPosition), gl.STATIC_DRAW);
 
         gl2D.vertexColorBuffer = gl.createBuffer ();
         gl.bindBuffer(gl.ARRAY_BUFFER, gl2D.vertexColorBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, gl2D.vertexColor, gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(gl2D.vertexColor), gl.STATIC_DRAW);
 
         gl2D.vertexTextureCoordBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, gl2D.vertexTextureCoordBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, gl2D.vertexTextureCoord, gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(gl2D.vertexTextureCoord), gl.STATIC_DRAW);
 
         gl2D.vertexIndexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl2D.vertexIndexBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, gl2D.vertexIndex, gl.STATIC_DRAW);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(gl2D.vertexIndex), gl.STATIC_DRAW);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, gl2D.vertexPositionBuffer);
         gl.vertexAttribPointer(gl2D.shaderProgram.vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
