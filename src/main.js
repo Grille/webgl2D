@@ -49,7 +49,7 @@ let counter = 0;
       let color = [100,ix*iy+angle,255,255];
       while (color[1]>255)color[1]-=255;
       gl2D.matrix.setRotate(angle+ix*iy);
-      //gl2D.addImage(testTexture2,[0,0,64,64],[-16,-16,32,32],color);
+      gl2D.addImage(testTexture2,[0,0,64,64],[-16,-16,32,32],color);
       counter++;
     }
   }
@@ -74,5 +74,5 @@ let counter = 0;
   let now = date - last;
   console.log("total time = "+now);
   console.log("--size("+counter+")---------------------------------------");
-  setTimeout(render, 100);
+  setTimeout(render, 10);
 }
