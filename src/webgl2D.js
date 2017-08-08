@@ -141,7 +141,7 @@ function webGL2DStart(canvas) {
       },
 
       startScene: () => {
-
+        gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
         // gl2D.vertexPosition = [];
         // gl2D.vertexTextureCoord = [];
         // gl2D.vertexColor = [];
@@ -174,7 +174,8 @@ function webGL2DStart(canvas) {
         let gl = gl2D.gl;
         let offset = gl2D.curOffset;
         let translate = gl2D.translate;
-        let color = [inputColor[0]/255,inputColor[1]/255,inputColor[2]/255,inputColor[3]/255];
+        let color = [];//[inputColor[0]/255,inputColor[1]/255,inputColor[2]/255,inputColor[3]/255];
+        for (let i = 0;i<16;i++)color[i] = inputColor[i]/255;
         let dstPos = gl2D.useMatrix(dst);
 
         let imageWidth = texture.width, imageHeight = texture.height;
@@ -212,20 +213,20 @@ function webGL2DStart(canvas) {
         gl2D.vertexColor[offset*4*4+2] = color[2];//b
         gl2D.vertexColor[offset*4*4+3] = color[3];//a
 
-        gl2D.vertexColor[offset*4*4+4] = color[0];
-        gl2D.vertexColor[offset*4*4+5] = color[1];
-        gl2D.vertexColor[offset*4*4+6] = color[2];
-        gl2D.vertexColor[offset*4*4+7] = color[3];
+        gl2D.vertexColor[offset*4*4+4] = color[4];
+        gl2D.vertexColor[offset*4*4+5] = color[5];
+        gl2D.vertexColor[offset*4*4+6] = color[6];
+        gl2D.vertexColor[offset*4*4+7] = color[7];
 
-        gl2D.vertexColor[offset*4*4+8] = color[0];
-        gl2D.vertexColor[offset*4*4+9] = color[1];
-        gl2D.vertexColor[offset*4*4+10] = color[2];
-        gl2D.vertexColor[offset*4*4+11] = color[3];
+        gl2D.vertexColor[offset*4*4+8] = color[8];
+        gl2D.vertexColor[offset*4*4+9] = color[9];
+        gl2D.vertexColor[offset*4*4+10] = color[10];
+        gl2D.vertexColor[offset*4*4+11] = color[11];
 
-        gl2D.vertexColor[offset*4*4+12] = color[0];
-        gl2D.vertexColor[offset*4*4+13] = color[1];
-        gl2D.vertexColor[offset*4*4+14] = color[2];
-        gl2D.vertexColor[offset*4*4+15] = color[3];
+        gl2D.vertexColor[offset*4*4+12] = color[12];
+        gl2D.vertexColor[offset*4*4+13] = color[13];
+        gl2D.vertexColor[offset*4*4+14] = color[14];
+        gl2D.vertexColor[offset*4*4+15] = color[15];
         color = null;
 
         gl2D.vertexIndex[offset*6+0] = offset*4+0;
@@ -392,7 +393,7 @@ function webGL2DStart(canvas) {
   gl.viewportWidth = canvas.width;
   gl.viewportHeight = canvas.height;
 
-  let size = 20000
+  let size = 10000
 
   gl2D.vertexPosition = new Float32Array(size*3*4);
   gl2D.vertexTextureCoord = new Float32Array(size*2*4);
