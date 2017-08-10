@@ -10,8 +10,8 @@ let ctx;
 let treeTexture;
 let groundTexture;
 
-let worldWidth = 16;
-let worldHeight = 16;
+let worldWidth = 64;
+let worldHeight = 64;
 
 let waterCoustics=0;
 
@@ -26,7 +26,7 @@ function main(){
   gl2D = webGL2DStart(canvas);
   ctx = canvas.getContext("2D");
 
-  for (let i = 0;i <(worldWidth+1)*(worldHeight+1);i++)heightMap[i] = -10;
+  for (let i = 0;i <(worldWidth+1)*(worldHeight+1);i++)heightMap[i] = -1;
   for (let ix = 0;ix<10;ix++){
       for (let iy = 0;iy<10;iy++){
         heightMap[ix+iy*(worldWidth+1)]=0;
@@ -38,7 +38,7 @@ function main(){
       }
   }
     for (let ix = 0;ix<4;ix++){
-      for (let iy = 0;iy<10;iy++){
+      for (let iy = 0;iy<9;iy++){
         heightMap[ix+iy*(worldWidth+1)]=20;
       }
   }
@@ -71,6 +71,7 @@ function loadImages(){
 }
 function drawGround(worldPos,pos){
   let color = [];
+  let waterColor = [];
   let waterCousticsX = waterCoustics;
   let waterCousticsY = waterCoustics;
   while (waterCousticsX>100)waterCousticsX-=100;
@@ -79,6 +80,7 @@ function drawGround(worldPos,pos){
   if(waterCousticsY>=25)waterCousticsY = 50-waterCousticsY;
   waterCousticsX/=10;
   waterCousticsY/=10;
+  let src = [0,0, 64,0, 64,64, 0,64];
   let vertexPos = [32,32-heightMap[worldPos+(worldWidth+1)]/*u*/, 64,16-heightMap[worldPos+1+(worldWidth+1)]/*r*/, 32,0-heightMap[worldPos+1]/*o*/, 0,16-heightMap[worldPos]];
   for (let i = 0;i<4;i++){
     color[i*4+0] = 60;
@@ -86,44 +88,50 @@ function drawGround(worldPos,pos){
     color[i*4+2] = 30;
     color[i*4+3] = 255;
   }
+  for (let i = 0;i<4;i++){
+    waterColor[i*4+0] = 50;
+    waterColor[i*4+1] = 100;
+    waterColor[i*4+2] = 200;
+    waterColor[i*4+3] = 0;
+  }
   let curWorldPos;
   let index = 0;
   curWorldPos = worldPos+(worldWidth+1);
   if (heightMap[curWorldPos]<0){
-    color[index*4+2] += 255;
-    //color[index*4+3] = 0;
-    // vertexPos[index*2+0]+=waterCousticsX*(heightMap[curWorldPos]/4+2);
-    // vertexPos[index*2+1]+=waterCousticsY*(heightMap[curWorldPos]/4+2);
+    color[index*4+0] = 200;
+    color[index*4+1] = 200;
+    color[index*4+2] = 150;
+    waterColor[index*4+3] = 255;
   }
   else {
     color[index*4+0] += heightMap[curWorldPos];
   }
   curWorldPos = worldPos+1+(worldWidth+1);index=1;
   if (heightMap[curWorldPos]<0){
-    color[index*4+2] += 255;
-    //color[index*4+3] = 0;
-    // vertexPos[index*2+0]+=waterCousticsX*(heightMap[curWorldPos]/4+2);
-    // vertexPos[index*2+1]+=waterCousticsY*(heightMap[curWorldPos]/4+2);
+    color[index*4+0] = 200;
+    color[index*4+1] = 200;
+    color[index*4+2] = 150;
+    waterColor[index*4+3] = 255;
   }
   else {
     color[index*4+0] += heightMap[curWorldPos];
   }
   curWorldPos = worldPos+1;index=2;
   if (heightMap[curWorldPos]<0){
-    color[index*4+2] += 255;
-    //color[index*4+3] = 0;
-    // vertexPos[index*2+0]+=waterCousticsX*(heightMap[curWorldPos]/4+2);
-    // vertexPos[index*2+1]+=waterCousticsY*(heightMap[curWorldPos]/4+2);
+    color[index*4+0] = 200;
+    color[index*4+1] = 200;
+    color[index*4+2] = 150;
+    waterColor[index*4+3] = 255;
   }
   else {
     color[index*4+0] += heightMap[curWorldPos];
   }
   curWorldPos = worldPos;index=3;
   if (heightMap[curWorldPos]<0){
-    color[index*4+2] += 255;
-    //color[index*4+3] = 0;
-    // vertexPos[index*2+0]+=waterCousticsX*(heightMap[curWorldPos]/4+2);
-    // vertexPos[index*2+1]+=waterCousticsY*(heightMap[curWorldPos]/4+2);
+    color[index*4+0] = 200;
+    color[index*4+1] = 200;
+    color[index*4+2] = 150;
+    waterColor[index*4+3] = 255;
   }
   else {
     color[index*4+0] += heightMap[curWorldPos];
@@ -133,7 +141,8 @@ function drawGround(worldPos,pos){
   //   if (color[i]>255)color[i]=255;
   // }
   gl2D.matrix.setTranslate([pos[0],pos[1]])
-  gl2D.addQuadImage(groundTexture,[0,0,64,32],vertexPos/*l*/,color);
+  gl2D.drawPrimitives(groundTexture,src,vertexPos/*l*/,color);
+  gl2D.drawPrimitives(groundTexture,src,[32,32, 64,16, 32,0, 0,16]/*l*/,waterColor);
   gl2D.matrix.reset();
 }
 function drawTree(pos){
@@ -159,14 +168,8 @@ function render5(){
   tmplast = tmpdate;
   for (let ix = 0;ix < width/64;ix++){
     for (let iy = 0;iy < height/32;iy++){
-      drawGround([ix*64,iy*32]);
-      drawGround([ix*64+32,iy*32+16]);
-    }
-  }
-  for (let ix = 0;ix < width/64;ix++){
-    for (let iy = 0;iy < height/32;iy++){
-        drawTree([ix*64+32,iy*32+16]);
-      counter++;
+
+
     }
   }
   //gl2D.addQuadImage(testTexture,[0,0,64,32],[64,128, 128,100, 128,64, 64,64],[0,255,0,255]);
@@ -192,10 +195,13 @@ function render5(){
   let now = date - last;
   console.log("total time = "+now);
   console.log("--size("+counter+")---------------------------------------");
-  setTimeout(render, 100);
+  setTimeout(render5, 100);
 }
 
 function render() {
+
+  let date = Date.now();
+  let last = date;
 
   waterCoustics++;
   if (waterCoustics > 100) waterCoustics=0;
@@ -223,6 +229,8 @@ function render() {
         let worldPos = aktPosX+aktPosY*(worldWidth+1);
         drawGround(worldPos,[drawPosX,drawPosY]);
 
+    //  gl2D.addImage(testTexture,[0,0,64,64],[drawPosX,drawPosY,64,32],[255,255,255,255]);
+
         //drawTree([drawPosX+32,drawPosY+16]);
         // context.drawImage(
         // staticEntity.sprite[version][envcode].texture,
@@ -237,5 +245,11 @@ function render() {
   }
   gl2D.endScene();
   gl2D.renderScene();
+
+  date = Date.now();
+  let now = date - last;
+  console.log("total time = "+now);
+  console.log("--size()---------------------------------------");
+
   setTimeout(render, 10);
 }

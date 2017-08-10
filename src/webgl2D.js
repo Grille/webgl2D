@@ -15,7 +15,8 @@ function webGL2DStart(canvas) {
       vertexTextureCoordBuffer:null,
       vertexColorBuffer:null,
       vertexIndexBuffer:null,
-      curOffset: 0,
+      IndexOffset: 0,
+      bufferOffset: 0,
       lastTexture: null,
       textureContinuous:[],
       textureOffset: 0,
@@ -23,6 +24,7 @@ function webGL2DStart(canvas) {
       textureCounter: 0,
       translate:[0,0],
       angle:0,
+
       sin:0,
       cos:0,
 
@@ -149,7 +151,8 @@ function webGL2DStart(canvas) {
         // gl2D.textureList = [];
         // gl2D.textureContinuous = [];
 
-        gl2D.curOffset = 0;
+        gl2D.IndexOffset = 0;
+        gl2D.bufferOffset = 0;
         gl2D.lastTexture = null;
         gl2D.textureOffset = -1;
       },
@@ -158,100 +161,61 @@ function webGL2DStart(canvas) {
         let translate = gl2D.translate;
         let sin = gl2D.sin, cos = gl2D.cos;
         let sceneWidth = gl.viewportWidth, sceneHeight = gl.viewportHeight;
-        return [
-          -1+((dst[0] * cos - dst[1] * sin)+translate[0])/sceneWidth*2,
-          +1-((dst[1] * cos + dst[0] * sin)+translate[1])/sceneHeight*2,
-          -1+((dst[2] * cos - dst[3] * sin)+translate[0])/sceneWidth*2,
-          +1-((dst[3] * cos + dst[2] * sin)+translate[1])/sceneHeight*2,
-          -1+((dst[4] * cos - dst[5] * sin)+translate[0])/sceneWidth*2,
-          +1-((dst[5] * cos + dst[4] * sin)+translate[1])/sceneHeight*2,
-          -1+((dst[6] * cos - dst[7] * sin)+translate[0])/sceneWidth*2,
-          +1-((dst[7] * cos + dst[6] * sin)+translate[1])/sceneHeight*2,
-        ];
+        let max = dst.length;
+        let result = [];
+        for (let i = 0;i < max;i+=2){
+          result[i+0] = -1+((dst[i] * cos - dst[i+1] * sin)+translate[0])/sceneWidth*2;
+          result[i+1] = +1-((dst[i+1] * cos + dst[i] * sin)+translate[1])/sceneHeight*2;
+        }
+        return result;
       },
     
-      addQuadImage: (texture,src,dst,inputColor) => {
+      drawPrimitives: (texture,src,dst,inputColor) => {
         let gl = gl2D.gl;
-        let offset = gl2D.curOffset;
-        let translate = gl2D.translate;
+        let IndexOffset = gl2D.IndexOffset;
+        let bufferOffset = gl2D.bufferOffset;
+        let size = dst.length/2;
         let color = [];//[inputColor[0]/255,inputColor[1]/255,inputColor[2]/255,inputColor[3]/255];
         for (let i = 0;i<16;i++)color[i] = inputColor[i]/255;
         let dstPos = gl2D.useMatrix(dst);
 
         let imageWidth = texture.width, imageHeight = texture.height;
-        let
-          startsrcX = src[0] / imageWidth,
-          endsrcX = (src[0] + src[2]) / imageWidth,
-          startsrcY = src[1] / imageHeight,
-          endsrcY = (src[1] + src[3]) / imageHeight;
 
-        gl2D.vertexPosition[offset*3*4+0] = dstPos[0];//ul
-        gl2D.vertexPosition[offset*3*4+1] = dstPos[1];
-        gl2D.vertexPosition[offset*3*4+2] = 0;
-        gl2D.vertexPosition[offset*3*4+3] = dstPos[2];//ur
-        gl2D.vertexPosition[offset*3*4+4] = dstPos[3];
-        gl2D.vertexPosition[offset*3*4+5] = 0;
-        gl2D.vertexPosition[offset*3*4+6] = dstPos[4];//or
-        gl2D.vertexPosition[offset*3*4+7] = dstPos[5];
-        gl2D.vertexPosition[offset*3*4+8] = 0;
-        gl2D.vertexPosition[offset*3*4+9] = dstPos[6];//ol
-        gl2D.vertexPosition[offset*3*4+10] = dstPos[7];
-        gl2D.vertexPosition[offset*3*4+11] = 0;
-        dstPos = null;
+        for (let i = 0;i < size; i++){
+          gl2D.vertexPosition[bufferOffset*3+0+3*i] = dstPos[0+2*i];//ul
+          gl2D.vertexPosition[bufferOffset*3+1+3*i] = dstPos[1+2*i];
+          gl2D.vertexPosition[bufferOffset*3+2+3*i] = 0;
 
-        gl2D.vertexTextureCoord[offset*2*4+0] = startsrcX;
-        gl2D.vertexTextureCoord[offset*2*4+1] = endsrcY;
-        gl2D.vertexTextureCoord[offset*2*4+2] = endsrcX;
-        gl2D.vertexTextureCoord[offset*2*4+3] = endsrcY;
-        gl2D.vertexTextureCoord[offset*2*4+4] = endsrcX;
-        gl2D.vertexTextureCoord[offset*2*4+5] = startsrcY;
-        gl2D.vertexTextureCoord[offset*2*4+6] = startsrcX;
-        gl2D.vertexTextureCoord[offset*2*4+7] = startsrcY;
+          gl2D.vertexTextureCoord[bufferOffset*2+0+2*i] = src[0+2*i]/ imageWidth;
+          gl2D.vertexTextureCoord[bufferOffset*2+1+2*i] = src[1+2*i]/ imageHeight;
 
-        gl2D.vertexColor[offset*4*4+0] = color[0];//r
-        gl2D.vertexColor[offset*4*4+1] = color[1];//g
-        gl2D.vertexColor[offset*4*4+2] = color[2];//b
-        gl2D.vertexColor[offset*4*4+3] = color[3];//a
 
-        gl2D.vertexColor[offset*4*4+4] = color[4];
-        gl2D.vertexColor[offset*4*4+5] = color[5];
-        gl2D.vertexColor[offset*4*4+6] = color[6];
-        gl2D.vertexColor[offset*4*4+7] = color[7];
-
-        gl2D.vertexColor[offset*4*4+8] = color[8];
-        gl2D.vertexColor[offset*4*4+9] = color[9];
-        gl2D.vertexColor[offset*4*4+10] = color[10];
-        gl2D.vertexColor[offset*4*4+11] = color[11];
-
-        gl2D.vertexColor[offset*4*4+12] = color[12];
-        gl2D.vertexColor[offset*4*4+13] = color[13];
-        gl2D.vertexColor[offset*4*4+14] = color[14];
-        gl2D.vertexColor[offset*4*4+15] = color[15];
-        color = null;
-
-        gl2D.vertexIndex[offset*6+0] = offset*4+0;
-        gl2D.vertexIndex[offset*6+1] = offset*4+1;
-        gl2D.vertexIndex[offset*6+2] = offset*4+2;
-        gl2D.vertexIndex[offset*6+3] = offset*4+0;
-        gl2D.vertexIndex[offset*6+4] = offset*4+2;
-        gl2D.vertexIndex[offset*6+5] = offset*4+3;
-
+          gl2D.vertexColor[bufferOffset*4+0+4*i] = color[0+4*i];//r
+          gl2D.vertexColor[bufferOffset*4+1+4*i] = color[1+4*i];//g
+          gl2D.vertexColor[bufferOffset*4+2+4*i] = color[2+4*i];//b
+          gl2D.vertexColor[bufferOffset*4+3+4*i] = color[3+4*i];//a
+        }
+        for (let i = 0;i < size-2; i++){
+          gl2D.vertexIndex[IndexOffset*3+0+3*i] = bufferOffset+0;
+          gl2D.vertexIndex[IndexOffset*3+1+3*i] = bufferOffset+1+i;
+          gl2D.vertexIndex[IndexOffset*3+2+3*i] = bufferOffset+2+i;
+        }
+      
         if (texture != gl2D.lastTexture){
         gl2D.textureOffset++;
-        // gl.deleteTexture(gl2D.lastTexture);
-        // gl2D.lastTexture = null;
         gl2D.lastTexture = texture;
         gl2D.textureList[gl2D.textureOffset] = texture;
         gl2D.textureContinuous[gl2D.textureOffset] = 0;
         }
         gl2D.textureContinuous[gl2D.textureOffset] +=2;
 
-        gl2D.curOffset+=1;
+        gl2D.IndexOffset+=size-2;
+        gl2D.bufferOffset+=size;
       },
-      addImage: (texture,src,dst,inputColor) => {
+      drawImage: (texture,src,dst,inputColor) => {
         let gl = gl2D.gl;
-        let offset = gl2D.curOffset;
-        let translate = gl2D.translate;
+        let IndexOffset = gl2D.IndexOffset;
+        let bufferOffset = gl2D.bufferOffset;
         let color = [inputColor[0]/255,inputColor[1]/255,inputColor[2]/255,inputColor[3]/255];
         dst[2]+=dst[0];dst[3]+=dst[1];
         let dstPos = gl2D.useMatrix([dst[0],dst[3],dst[2],dst[3],dst[2],dst[1],dst[0],dst[1]]);
@@ -263,56 +227,56 @@ function webGL2DStart(canvas) {
           startsrcY = src[1] / imageHeight,
           endsrcY = (src[1] + src[3]) / imageHeight;
 
-        gl2D.vertexPosition[offset*3*4+0] = dstPos[0];//ul
-        gl2D.vertexPosition[offset*3*4+1] = dstPos[1];
-        gl2D.vertexPosition[offset*3*4+2] = 0;
-        gl2D.vertexPosition[offset*3*4+3] = dstPos[2];//ur
-        gl2D.vertexPosition[offset*3*4+4] = dstPos[3];
-        gl2D.vertexPosition[offset*3*4+5] = 0;
-        gl2D.vertexPosition[offset*3*4+6] = dstPos[4];//or
-        gl2D.vertexPosition[offset*3*4+7] = dstPos[5];
-        gl2D.vertexPosition[offset*3*4+8] = 0;
-        gl2D.vertexPosition[offset*3*4+9] = dstPos[6];//ol
-        gl2D.vertexPosition[offset*3*4+10] = dstPos[7];
-        gl2D.vertexPosition[offset*3*4+11] = 0;
+        gl2D.vertexPosition[bufferOffset*3+0] = dstPos[0];//ul
+        gl2D.vertexPosition[bufferOffset*3+1] = dstPos[1];
+        gl2D.vertexPosition[bufferOffset*3+2] = 0;
+        gl2D.vertexPosition[bufferOffset*3+3] = dstPos[2];//ur
+        gl2D.vertexPosition[bufferOffset*3+4] = dstPos[3];
+        gl2D.vertexPosition[bufferOffset*3+5] = 0;
+        gl2D.vertexPosition[bufferOffset*3+6] = dstPos[4];//or
+        gl2D.vertexPosition[bufferOffset*3+7] = dstPos[5];
+        gl2D.vertexPosition[bufferOffset*3+8] = 0;
+        gl2D.vertexPosition[bufferOffset*3+9] = dstPos[6];//ol
+        gl2D.vertexPosition[bufferOffset*3+10] = dstPos[7];
+        gl2D.vertexPosition[bufferOffset*3+11] = 0;
         dstPos = null;
 
-        gl2D.vertexTextureCoord[offset*2*4+0] = startsrcX;
-        gl2D.vertexTextureCoord[offset*2*4+1] = endsrcY;
-        gl2D.vertexTextureCoord[offset*2*4+2] = endsrcX;
-        gl2D.vertexTextureCoord[offset*2*4+3] = endsrcY;
-        gl2D.vertexTextureCoord[offset*2*4+4] = endsrcX;
-        gl2D.vertexTextureCoord[offset*2*4+5] = startsrcY;
-        gl2D.vertexTextureCoord[offset*2*4+6] = startsrcX;
-        gl2D.vertexTextureCoord[offset*2*4+7] = startsrcY;
+        gl2D.vertexTextureCoord[bufferOffset*2+0] = startsrcX;
+        gl2D.vertexTextureCoord[bufferOffset*2+1] = endsrcY;
+        gl2D.vertexTextureCoord[bufferOffset*2+2] = endsrcX;
+        gl2D.vertexTextureCoord[bufferOffset*2+3] = endsrcY;
+        gl2D.vertexTextureCoord[bufferOffset*2+4] = endsrcX;
+        gl2D.vertexTextureCoord[bufferOffset*2+5] = startsrcY;
+        gl2D.vertexTextureCoord[bufferOffset*2+6] = startsrcX;
+        gl2D.vertexTextureCoord[bufferOffset*2+7] = startsrcY;
 
-        gl2D.vertexColor[offset*4*4+0] = color[0];//r
-        gl2D.vertexColor[offset*4*4+1] = color[1];//g
-        gl2D.vertexColor[offset*4*4+2] = color[2];//b
-        gl2D.vertexColor[offset*4*4+3] = color[3];//a
+        gl2D.vertexColor[bufferOffset*4+0] = color[0];//r
+        gl2D.vertexColor[bufferOffset*4+1] = color[1];//g
+        gl2D.vertexColor[bufferOffset*4+2] = color[2];//b
+        gl2D.vertexColor[bufferOffset*4+3] = color[3];//a
 
-        gl2D.vertexColor[offset*4*4+4] = color[0];
-        gl2D.vertexColor[offset*4*4+5] = color[1];
-        gl2D.vertexColor[offset*4*4+6] = color[2];
-        gl2D.vertexColor[offset*4*4+7] = color[3];
+        gl2D.vertexColor[bufferOffset*4+4] = color[0];
+        gl2D.vertexColor[bufferOffset*4+5] = color[1];
+        gl2D.vertexColor[bufferOffset*4+6] = color[2];
+        gl2D.vertexColor[bufferOffset*4+7] = color[3];
 
-        gl2D.vertexColor[offset*4*4+8] = color[0];
-        gl2D.vertexColor[offset*4*4+9] = color[1];
-        gl2D.vertexColor[offset*4*4+10] = color[2];
-        gl2D.vertexColor[offset*4*4+11] = color[3];
+        gl2D.vertexColor[bufferOffset*4+8] = color[0];
+        gl2D.vertexColor[bufferOffset*4+9] = color[1];
+        gl2D.vertexColor[bufferOffset*4+10] = color[2];
+        gl2D.vertexColor[bufferOffset*4+11] = color[3];
 
-        gl2D.vertexColor[offset*4*4+12] = color[0];
-        gl2D.vertexColor[offset*4*4+13] = color[1];
-        gl2D.vertexColor[offset*4*4+14] = color[2];
-        gl2D.vertexColor[offset*4*4+15] = color[3];
+        gl2D.vertexColor[bufferOffset*4+12] = color[0];
+        gl2D.vertexColor[bufferOffset*4+13] = color[1];
+        gl2D.vertexColor[bufferOffset*4+14] = color[2];
+        gl2D.vertexColor[bufferOffset*4+15] = color[3];
         color = null;
 
-        gl2D.vertexIndex[offset*6+0] = offset*4+0;
-        gl2D.vertexIndex[offset*6+1] = offset*4+1;
-        gl2D.vertexIndex[offset*6+2] = offset*4+2;
-        gl2D.vertexIndex[offset*6+3] = offset*4+0;
-        gl2D.vertexIndex[offset*6+4] = offset*4+2;
-        gl2D.vertexIndex[offset*6+5] = offset*4+3;
+        gl2D.vertexIndex[IndexOffset*3+0] = bufferOffset+0;
+        gl2D.vertexIndex[IndexOffset*3+1] = bufferOffset+1;
+        gl2D.vertexIndex[IndexOffset*3+2] = bufferOffset+2;
+        gl2D.vertexIndex[IndexOffset*3+3] = bufferOffset+0;
+        gl2D.vertexIndex[IndexOffset*3+4] = bufferOffset+2;
+        gl2D.vertexIndex[IndexOffset*3+5] = bufferOffset+3;
 
         if (texture != gl2D.lastTexture){
         gl2D.textureOffset++;
@@ -324,7 +288,8 @@ function webGL2DStart(canvas) {
         }
         gl2D.textureContinuous[gl2D.textureOffset] +=2;
 
-        gl2D.curOffset+=1;
+        gl2D.IndexOffset+=2;
+        gl2D.bufferOffset+=4;
       },
       endScene: () => {
         let gl = gl2D.gl;
