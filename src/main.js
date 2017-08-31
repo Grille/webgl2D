@@ -18,6 +18,10 @@ let worldWidth = 16;
 let worldHeight = 16;
 let waterCoustics=0;
 
+let lastDate = 0;
+let mouseX = 0;
+let mouseY = 0;
+
 let typMap = new Uint16Array(worldWidth*worldHeight);
 let heightMap = new Int16Array((worldWidth+1)*(worldHeight+1));
 let mapPosX = 7;
@@ -187,6 +191,8 @@ function render5(){
 
 function render() {
 
+  let time = Date.now() -lastDate;
+  lastDate = Date.now();
   let date = Date.now();
   let last = date;
   let tmplast
@@ -201,19 +207,30 @@ function render() {
 
   tmplast = Date.now();
 
-  for (let ix = 0;ix<100;ix++){
-    for (let iy = 0;iy<50;iy++){
-      gl2D.matrix.setTranslate([ix*20,iy*20])
-      gl2D.matrix.addRotate(0.1)
-      gl2D.drawImage(treeTexture,[0,0,32,64],[-16,-64,32,64],[255,255,255,255]);
-    }
-  }
-
   gl2D.matrix.reset();
+
+  let src = new Uint8Array([0,0,64,64])
+  let dst = new Int32Array([128,128,64,64])
+  let color = new Uint8Array([0,200,0,255])
+  for (let i = 0;i<6000;i++){
+    let input = [0,0,64,64]
+    dst[0] = input[0];
+    dst[1] = input[1];
+    dst[2] = input[2];
+    dst[3] = input[3];
+    gl2D.drawImage(nullTexture,[0,0,64,64],[128,128,64,64],[0,200,0,255]);
+  }
+  gl2D.drawImage(nullTexture,[0,0,1,1],[128+16,128+16,4,4],[0,255,0,255]);
+
+  gl2D.drawImage(nullTexture,[0,0,1,1],[mouseX-8,mouseY-8,16,16],[255,0,0,100]);
 
   gl2D.drawImage(nullTexture,[0,0,1,1],[16,16,256,32],[100,100,100,255]);
   if ((now/16.66) < 1) gl2D.drawImage(nullTexture,[0,0,1,1],[16,19,(now/16.66)*256,26],[(now/16.66)*255,200,0,255]);
-  else gl2D.drawImage(nullTexture,[0,0,1,1],[16,19,256,26],[200,0,0,255]);
+  else {
+    gl2D.drawImage(nullTexture,[0,0,1,1],[16,19,256,26],[255,150,0,255]);
+    gl2D.drawImage(nullTexture,[0,0,1,1],[16,19,(now/16.66)*256-256,26],[255,0,0,255]);
+  }
+
 
   let fullTime = useTime + bindTime + renderTime;
   gl2D.drawImage(nullTexture,[0,0,1,1],[16,64,256,32],[100,100,100,255]);
@@ -233,9 +250,22 @@ function render() {
   gl2D.renderScene();//--
   date = Date.now();
   renderTime = (renderTime*3 + (date - tmplast))/4;
-
   date = Date.now();
   now = (now*3 + (date - last))/4;
 
-  setTimeout(render, 10);
+  console.log("----------------------------------------------------");
+  console.log("startTime = "+ startTime);
+  console.log("useTime = "+ useTime);
+  console.log("bindTime = "+ bindTime);
+  console.log("renderTime = "+ renderTime);
+  console.log("functionTime = "+ (date - lastDate));
+  console.log("fullTime = "+ time);
+  console.log("fps = "+ 1000/time);
+
+  window.requestAnimationFrame(render);
 }
+
+window.addEventListener("mousemove", (e) => {
+  mouseX = e.x;
+  mouseY = e.y;
+});
