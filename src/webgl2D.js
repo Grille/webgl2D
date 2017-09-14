@@ -102,19 +102,60 @@ function webGL2DStart(canvas) {
 
         gl2D.shaderProgram = shaderProgram;
       },
+      pow : (input) => {
+        if (input<=32)return 32;
+        if (input<=64)return 64;
+        if (input<=128)return 128;
+        if (input<=256)return 256;
+        if (input<=512)return 512;
+        if (input<=1024)return 1024;
+        if (input<=2048)return 2048;
+      },
+      textureFromImage: (image) => {
+        let gl = gl2D.gl;
+        let texture
+        texture = gl.createTexture();
+
+        let canvas = document.createElement("canvas");
+        let context  = canvas.getContext("2d");
+        context.imageSmoothingEnabled = false;//Chrome
+        context.mozImageSmoothingEnabled = false;//Firefox
+        canvas.width = gl2D.pow(image.width);
+        canvas.height = gl2D.pow(image.height);
+        context.drawImage(image, 0, 0, image.width, image.height);
+
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        texture.width = canvas.width;
+        texture.height = canvas.height;
+        texture.index = gl2D.textureCounter;
+        gl2D.textureCounter++
+
+        return texture;
+      },
       textureFromFile: (path) => {
         let gl = gl2D.gl;
         let texture
         texture = gl.createTexture();
         texture.image = new Image();
         texture.image.onload = function () {
+          let canvas = document.createElement("canvas");
+          let context  = canvas.getContext("2d");
+          context.imageSmoothingEnabled = false;//Chrome
+          context.mozImageSmoothingEnabled = false;//Firefox
+          canvas.width = gl2D.pow(texture.image.width);
+          canvas.height = gl2D.pow(texture.image.height);
+          context.drawImage(texture.image, 0, 0, texture.image.width, texture.image.height);
           gl.bindTexture(gl.TEXTURE_2D, texture);
-          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
           gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
           gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
           gl.bindTexture(gl.TEXTURE_2D, null);
-          texture.width = texture.image.width;
-          texture.height = texture.image.height;
+          texture.width = canvas.width;
+          texture.height = canvas.height;
           texture.index = gl2D.textureCounter;
           gl2D.textureCounter++
         }
@@ -381,7 +422,7 @@ function webGL2DStart(canvas) {
       },
   };
 
-  gl2D.gl = canvas.getContext("webgl", {antialias: false,depth: false});
+  gl2D.gl = canvas.getContext("webgl", {antialias: false, depth: false});
   let gl = gl2D.gl;
   gl2D.vertexPositionBuffer = gl.createBuffer();
   gl2D.vertexColorBuffer = gl.createBuffer ();
