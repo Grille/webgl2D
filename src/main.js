@@ -161,33 +161,7 @@ function drawTree(pos){
   gl2D.addImage(treeTexture,[0,0,32,64],[-16,-64,32,64],[255,255,255,255]);
   gl2D.matrix.reset();
 }
-function render5(){
-  let date = Date.now();
-  let last = date;
-  let counter = 0;
-  let tmplast,tmpdate,tmpnow;
-  tmpdate = Date.now();
-  tmplast = tmpdate;
-  gl2D.startScene();
 
-  for (let ix = 0;ix < width/64;ix++){
-    for (let iy = 0;iy < height/32;iy++){
-
-
-    }
-  }
-  //gl2D.addQuadImage(testTexture,[0,0,64,32],[64,128, 128,100, 128,64, 64,64],[0,255,0,255]);
-  angle++;
-  gl2D.matrix.reset();
-  gl2D.endScene();
-  gl2D.renderScene();
-
-  date = Date.now();
-  let now = date - last;
-  console.log("total time = "+now);
-  console.log("--size("+counter+")---------------------------------------");
-  setTimeout(render5, 100);
-}
 
 function render() {
 
@@ -212,6 +186,8 @@ function render() {
   let src = new Uint8Array([0,0,64,64])
   let dst = new Int32Array([128,128,64,64])
   let color = new Uint8Array([0,200,0,255])
+
+/*
   for (let i = 0;i<6000;i++){
     let input = [0,0,64,64]
     dst[0] = input[0];
@@ -220,9 +196,58 @@ function render() {
     dst[3] = input[3];
     gl2D.drawImage(nullTexture,[0,0,64,64],[128,128,64,64],[0,200,0,255]);
   }
-  gl2D.drawImage(nullTexture,[0,0,1,1],[128+16,128+16,4,4],[0,255,0,255]);
+*/
+
+
+  let width = canvas.width, height = canvas.height;
+
+
+
+  let posList = [width/2,0]
+  let colorList = [0,150,100,255];
+  let offsetPos = 2;
+  let offsetColor = 4;
+
+  // posList[offsetPos] = 0;
+  // posList[offsetPos+1] = height 
+  // colorList[offsetColor] = colorList[0];
+  // colorList[offsetColor+1] = colorList[1];
+  // colorList[offsetColor+2] = colorList[2];
+  // colorList[offsetColor+3] = colorList[3];
+  // offsetPos += 2
+  // offsetColor += 4;
+  for (let i = 0; i<=width/10;i++){
+  posList[offsetPos] = i*10;posList[offsetPos+1] = 300+Math.random()*200;
+  colorList[offsetColor] = 0;
+  colorList[offsetColor+1] = 200;
+  colorList[offsetColor+2] = 255;
+  colorList[offsetColor+3] = 10;
+  offsetPos += 2
+  offsetColor += 4;
+  }
+
+  // posList[offsetPos] = width;
+  // posList[offsetPos+1] = height 
+  // colorList[offsetColor] = colorList[0];
+  // colorList[offsetColor+1] = colorList[1];
+  // colorList[offsetColor+2] = colorList[2];
+  // colorList[offsetColor+3] = colorList[3];
+
+
+
+  gl2D.drawPrimitives(nullTexture,posList,posList,colorList);
+
 
   gl2D.drawImage(nullTexture,[0,0,1,1],[mouseX-8,mouseY-8,16,16],[255,0,0,100]);
+
+
+
+
+
+
+
+
+
 
   gl2D.drawImage(nullTexture,[0,0,1,1],[16,16,256,32],[100,100,100,255]);
   if ((now/16.66) < 1) gl2D.drawImage(nullTexture,[0,0,1,1],[16,19,(now/16.66)*256,26],[(now/16.66)*255,200,0,255]);
@@ -230,8 +255,6 @@ function render() {
     gl2D.drawImage(nullTexture,[0,0,1,1],[16,19,256,26],[255,150,0,255]);
     gl2D.drawImage(nullTexture,[0,0,1,1],[16,19,(now/16.66)*256-256,26],[255,0,0,255]);
   }
-
-
   let fullTime = useTime + bindTime + renderTime;
   gl2D.drawImage(nullTexture,[0,0,1,1],[16,64,256,32],[100,100,100,255]);
   gl2D.drawImage(nullTexture,[0,0,1,1],[16,67,(useTime/fullTime)*256,26],[200,0,0,255]);
@@ -263,6 +286,7 @@ function render() {
   console.log("fps = "+ 1000/time);
 
   window.requestAnimationFrame(render);
+  //window.setTimeout(render,100);
 }
 
 window.addEventListener("mousemove", (e) => {
