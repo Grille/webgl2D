@@ -1,5 +1,5 @@
 # webgl2D
-2d webgl library (very experimental)
+2d webgl library
 <br>
 ## Features
 Easy drawing images with webGL<br>
@@ -17,8 +17,17 @@ get context with webGL2DStart<br>
 ````
 load a texture<br>
 ````js
-  //texture must be a potency of 2 (32, 64, 128, etc)
+  //texture must be a potency of 2 (32, 64, 128, etc), otherwise it is enlarged when created
+
+  //you can create a texture from a file,
   let texture = gl2D.textureFromFile("./assets/texture.png");
+
+  //from image or canvas,
+  let texture = gl2D.textureFromImage(image);
+
+  //or from Uint8Array,
+  //(pixelArray,width,height);
+  let texture = gl2D.textureFromPixelArray(new Uint8Array(pixelArray),64,64);
 ````
 render the image<br>
 ````js
@@ -27,7 +36,11 @@ render the image<br>
   
   //add image to render list
   //(texture,src:[posX,posY,width,height],dst:[posX,posY,width,height],color:[r,g,b,a])
-  gl2D.addImage(texture,[0,0,64,64],[-32,-32,64,64],color);
+  gl2D.drawImage(texture,[0,0,64,64],[64,64,64,64],[255,255,255,255]);
+
+  //add triangle to render list
+  //(texture,src:[posX1,posY1,posX2,posY2,...],dst:[posX1,posY1,posX2,posY2,...],color:[r,g,b,a, r,g,b,a,...])
+  gl2D.drawPrimitive(texture,[0,0,64,0,32,32],[0,0,64,0,32,32],[255,0,0,255, 0,255,0,255, 0,0,255,255]);
   
   //bind buffers
   gl2D.endScene();
