@@ -4,9 +4,6 @@
 ## Features
 Easy drawing images with webGL<br>
 
-## Issues
-On firefox ineffective<br>
-
 ## Use
 ### basic
 Add webgl2D.js to you files<br>
