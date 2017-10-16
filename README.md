@@ -25,6 +25,7 @@ load a texture<br>
   texture = gl2D.textureFromImage(image);
 
   //or from Uint8Array 
+  //whether it is RGB or RGBA is automatically determined
   //parameter(pixelArray,width,height);
   texture = gl2D.textureFromPixelArray(new Uint8Array(pixelArray),64,64);
 ````
@@ -93,7 +94,7 @@ custom shaders<br>
     void main(void) {
         gl_Position = vec4(aVertexPosition.x, aVertexPosition.y, 0.0, 1.0);
         vTextureCoord = aTextureCoord;
-        vColor = aVertexColor;
+        vColor = aVertexColor / vec4(255,255,255,255);
     }
   `
   fragmentShaderCode = 

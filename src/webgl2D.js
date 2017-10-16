@@ -28,7 +28,7 @@ function webGL2DStart(canvas) {
       angle:0,
 
       sin:0,
-      cos:0,
+      cos:1,
 
       drawImageDst: new Int32Array(4),
       //draw used
@@ -175,7 +175,6 @@ function webGL2DStart(canvas) {
         context.mozImageSmoothingEnabled = false;//Firefox
         canvas.width = gl2D.pow(512);
         canvas.height = gl2D.pow(512);
-        context.t
         context.drawImage(image, 0, 0, image.width, image.height);
 
         gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -209,12 +208,10 @@ function webGL2DStart(canvas) {
         gl2D.textureOffset = -1;
       },
     
-      drawTriangle : (texture,src,dst,inputColor) => {
+      drawTriangle : (texture,src,dst,color) => {
         let gl = gl2D.gl;
         let IndexOffset = gl2D.IndexOffset;
         let bufferOffset = gl2D.bufferOffset;
-        let color = [];//[inputColor[0]/255,inputColor[1]/255,inputColor[2]/255,inputColor[3]/255];
-        for (let i = 0;i<12;i++)color[i] = inputColor[i]/255;
         let dstPos = gl2D.useMatrix(dst);
 
         let imageWidth = texture.width, imageHeight = texture.height;
@@ -268,13 +265,11 @@ function webGL2DStart(canvas) {
         gl2D.bufferOffset+=3;
 
       },
-      drawTriangleFan: (texture,src,dst,inputColor) => {
+      drawTriangleFan: (texture,src,dst,color) => {
         let gl = gl2D.gl;
         let IndexOffset = gl2D.IndexOffset;
         let bufferOffset = gl2D.bufferOffset;
         let size = dst.length/2;
-        let color = [];//[inputColor[0]/255,inputColor[1]/255,inputColor[2]/255,inputColor[3]/255];
-        for (let i = 0;i<size*4;i++)color[i] = inputColor[i]/255;
         let dstPos = gl2D.useMatrix(dst);
 
         let imageWidth = texture.width, imageHeight = texture.height;
@@ -312,12 +307,10 @@ function webGL2DStart(canvas) {
         gl2D.IndexOffset+=size-2;
         gl2D.bufferOffset+=size;
       },
-      drawSquare : (texture,src,dst,inputColor) => {
+      drawSquare : (texture,src,dst,color) => {
         let gl = gl2D.gl;
         let IndexOffset = gl2D.IndexOffset;
         let bufferOffset = gl2D.bufferOffset;
-        let color = [];//[inputColor[0]/255,inputColor[1]/255,inputColor[2]/255,inputColor[3]/255];
-        for (let i = 0;i<16;i++)color[i] = inputColor[i]/255;
         let dstPos = gl2D.useMatrix(dst);
 
         let imageWidth = texture.width, imageHeight = texture.height;
@@ -401,7 +394,7 @@ function webGL2DStart(canvas) {
 
 
       },
-      drawImage: (texture,src,dst,inputColor) => {
+      drawImage: (texture,src,dst,color) => {
         // let dst = gl2D.drawImageDst;
         // dst[0] = inputDst[0];
         // dst[1] = inputDst[1];
@@ -411,8 +404,6 @@ function webGL2DStart(canvas) {
         let gl = gl2D.gl;
         let IndexOffset = gl2D.IndexOffset;
         let bufferOffset = gl2D.bufferOffset;
-        let color = [inputColor[0]/255,inputColor[1]/255,inputColor[2]/255,inputColor[3]/255];
-
 
         let 
           startdstX = dst[0],
@@ -615,7 +606,7 @@ function webGL2DStart(canvas) {
       void main(void) {
           gl_Position = vec4(aVertexPosition.x, aVertexPosition.y, 0.0, 1.0);
           vTextureCoord = aTextureCoord;
-          vColor = aVertexColor;
+          vColor = aVertexColor / vec4(255,255,255,255);
       }
       `
     ,
