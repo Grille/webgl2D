@@ -17,6 +17,7 @@ function webGL2DStart(canvas) {
       vertexIndexBuffer:null,
       IndexOffset: 0,
       bufferOffset: 0,
+      bufferCreatet: false,
       lastTexture: null,
       textureContinuous:[],
       textureOffset: 0,
@@ -411,8 +412,6 @@ function webGL2DStart(canvas) {
           startdstY = dst[1],
           enddstY = dst[3] + dst[1];
 
-          //wtf?
-
         let dstPos = gl2D.useMatrix([startdstX,enddstY,enddstX,enddstY,enddstX,startdstY,startdstX,startdstY]);
 
         let imageWidth = texture.width, imageHeight = texture.height;
@@ -477,19 +476,25 @@ function webGL2DStart(canvas) {
         let gl = gl2D.gl;
 
         gl.bindBuffer(gl.ARRAY_BUFFER, gl2D.vertexPositionBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, gl2D.vertexPosition, gl.DYNAMIC_DRAW);
+        if (gl2D.bufferCreatet === false) gl.bufferData(gl.ARRAY_BUFFER, gl2D.vertexPosition, gl.DYNAMIC_DRAW);
+        else gl.bufferSubData(gl.ARRAY_BUFFER, 0, gl2D.vertexPosition, 0, gl2D.bufferOffset*2);
         gl.vertexAttribPointer(gl2D.shaderProgram.vertexPositionAttribute, 2, gl.FLOAT, false, 0, 0);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, gl2D.vertexColorBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, gl2D.vertexColor, gl.DYNAMIC_DRAW);
+        if (gl2D.bufferCreatet === false) gl.bufferData(gl.ARRAY_BUFFER, gl2D.vertexColor, gl.DYNAMIC_DRAW);
+        else gl.bufferSubData(gl.ARRAY_BUFFER, 0, gl2D.vertexColor, 0, gl2D.bufferOffset*4);
         gl.vertexAttribPointer(gl2D.shaderProgram.vertexColorAttribute, 4, gl.FLOAT, false, 0, 0);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, gl2D.vertexTextureCoordBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, gl2D.vertexTextureCoord, gl.DYNAMIC_DRAW);
+        if (gl2D.bufferCreatet === false) gl.bufferData(gl.ARRAY_BUFFER, gl2D.vertexTextureCoord, gl.DYNAMIC_DRAW);
+        else gl.bufferSubData(gl.ARRAY_BUFFER, 0, gl2D.vertexTextureCoord, 0, gl2D.bufferOffset*2);
         gl.vertexAttribPointer(gl2D.shaderProgram.textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);
-
+        
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl2D.vertexIndexBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, gl2D.vertexIndex, gl.DYNAMIC_DRAW);
+        if (gl2D.bufferCreatet === false) gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, gl2D.vertexIndex, gl.DYNAMIC_DRAW);
+        else gl.bufferSubData(gl.ARRAY_BUFFER, 0, gl2D.vertexIndex, 0, gl2D.IndexOffset);
+
+        gl2D.bufferCreatet = true;
       },
       renderScene: () => {
         let gl = gl2D.gl;
@@ -532,6 +537,21 @@ function webGL2DStart(canvas) {
             gl2D.useMatrixResult[i+1] = (+1-((dst[i+1]*scale[1] * cos + dst[i]*scale[0] * sin)+translate[1])/sceneHeight);
           }
         }
+
+        // let i = 0;
+        // gl2D.useMatrixResult[i+0] = (-1+((dst[i]*scale[0] * cos - dst[i+1]*scale[1] * sin)+translate[0])/sceneWidth);
+        // gl2D.useMatrixResult[i+1] = (+1-((dst[i+1]*scale[1] * cos + dst[i]*scale[0] * sin)+translate[1])/sceneHeight);
+        // i+=2
+        // gl2D.useMatrixResult[i+0] = (-1+((dst[i]*scale[0] * cos - dst[i+1]*scale[1] * sin)+translate[0])/sceneWidth);
+        // gl2D.useMatrixResult[i+1] = (+1-((dst[i+1]*scale[1] * cos + dst[i]*scale[0] * sin)+translate[1])/sceneHeight);
+        // i+=2
+        // gl2D.useMatrixResult[i+0] = (-1+((dst[i]*scale[0] * cos - dst[i+1]*scale[1] * sin)+translate[0])/sceneWidth);
+        // gl2D.useMatrixResult[i+1] = (+1-((dst[i+1]*scale[1] * cos + dst[i]*scale[0] * sin)+translate[1])/sceneHeight);
+        // i+=2
+        // gl2D.useMatrixResult[i+0] = (-1+((dst[i]*scale[0] * cos - dst[i+1]*scale[1] * sin)+translate[0])/sceneWidth);
+        // gl2D.useMatrixResult[i+1] = (+1-((dst[i+1]*scale[1] * cos + dst[i]*scale[0] * sin)+translate[1])/sceneHeight);
+
+
         return gl2D.useMatrixResult;
       },
       matrix: {
@@ -543,7 +563,8 @@ function webGL2DStart(canvas) {
           gl2D.translate[1] += y;
         },
         setScale: (x,y) => {
-          gl2D.scale = [x,y];
+          gl2D.scale[0] = x;
+          gl2D.scale[1] = y;
         },
         addScale: (x,y) => {
           gl2D.scale[0] += x;
@@ -558,10 +579,12 @@ function webGL2DStart(canvas) {
           gl2D.sin = Math.sin(gl2D.angle * 3.14159265 / 180), gl2D.cos = Math.cos(gl2D.angle * 3.14159265 / 180);
         },
         reset: () => {
-          gl2D.translate = [0,0];
-          gl2D.scale = [1,1];
+          gl2D.translate[0] = 0;
+          gl2D.translate[1] = 0
+          gl2D.scale[0] = 1;
+          gl2D.scale[1] = 1;
           gl2D.angle = 0;
-          gl2D.sin = Math.sin(gl2D.angle * 3.14159265 / 180), gl2D.cos = Math.cos(gl2D.angle * 3.14159265 / 180);
+          gl2D.sin = 0, gl2D.cos = 1;
         },
         save: () => {
           return [gl2D.translate,gl2D.scale,gl2D.angle];
@@ -575,8 +598,10 @@ function webGL2DStart(canvas) {
       },
   };
 
-  gl2D.gl = canvas.getContext("webgl", {antialias: false, depth: false});
+  gl2D.gl = canvas.getContext("webgl2", {antialias: false, depth: false});
+  if (gl2D.gl === void 0 || gl2D.gl === null) gl2D.gl = canvas.getContext("webgl", {antialias: false, depth: false});
   let gl = gl2D.gl;
+  console.log(gl)
   gl2D.vertexPositionBuffer = gl.createBuffer();
   gl2D.vertexColorBuffer = gl.createBuffer ();
   gl2D.vertexTextureCoordBuffer = gl.createBuffer();
@@ -584,7 +609,7 @@ function webGL2DStart(canvas) {
   gl.viewportWidth = canvas.width;
   gl.viewportHeight = canvas.height;
 
-  let size = 20000
+  let size = 50000
 
   gl2D.vertexPosition = new Float32Array(size*2*2);
   gl2D.vertexTextureCoord = new Float32Array(size*2*2);
@@ -633,3 +658,6 @@ function webGL2DStart(canvas) {
   
   return gl2D;
 };
+
+//exports
+webGL2DStart();

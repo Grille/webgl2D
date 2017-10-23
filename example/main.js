@@ -173,14 +173,14 @@ function render() {
   date = Date.now();
   now = (now*3 + (date - last))/4;
 
-  console.log("----------------------------------------------------");
-  console.log("startTime = "+ startTime);
-  console.log("useTime = "+ useTime);
-  console.log("bindTime = "+ bindTime);
-  console.log("renderTime = "+ renderTime);
-  console.log("functionTime = "+ (date - lastDate));
-  console.log("fullTime = "+ time);
-  console.log("fps = "+ 1000/time);
+  // console.log("----------------------------------------------------");
+  // console.log("startTime = "+ startTime);
+  // console.log("useTime = "+ useTime);
+  // console.log("bindTime = "+ bindTime);
+  // console.log("renderTime = "+ renderTime);
+  // console.log("functionTime = "+ (date - lastDate));
+  // console.log("fullTime = "+ time);
+  // console.log("fps = "+ 1000/time);
 
   window.requestAnimationFrame(render);
   //window.setTimeout(render,100);
