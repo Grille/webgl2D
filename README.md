@@ -12,7 +12,7 @@ Add webgl2D.js to you files<br>
 get context with webGL2DStart<br>
 ````js
   let canvas = document.getElementById("canvas");
-  let gl2D = webGL2DStart(canvas);
+  let gl2D = new WebGL2DContext(canvas);
 ````
 load a texture<br>
 ````js
@@ -47,27 +47,16 @@ render the image<br>
 use matrix<br>
 ````js
   //moves the center of coordinate system
-  gl2D.matrix.setTranslate(64,0);
+  gl2D.matrix.translate(64,0);
   
   //scale the coordinate system
-  gl2D.matrix.setScale(1,1);
+  gl2D.matrix.scale(1,1);
 
   //rotates around the center
-  gl2D.matrix.addRotate(10);
+  gl2D.matrix.rotate(10);
 
-  add...
-  //add to current values
-  set...
-  //replace current values
-  
   //reset matrix to default
   gl2D.matrix.reset();
-
-  //return current matrix
-  matrix = gl2D.matrix.save();
-
-  //replace current matrix with saved matrix
-  gl2D.matrix.load(matrix);
 ````
 extended drawing functions<br>
 ````js
@@ -81,35 +70,13 @@ extended drawing functions<br>
 ````
 custom shaders<br>
 ````js
-  //default shader code
-  vertexShaderCode = 
-  `
-    attribute vec2 aVertexPosition;
-    attribute vec2 aTextureCoord;
-    attribute vec4 aVertexColor;
+  //shader attributes
+    vec2 aVertexPosition;
+    vec2 aTextureCoord;
+    vec4 aVertexColor;
 
-    varying vec2 vTextureCoord;
-    varying vec4 vColor;
-
-    void main(void) {
-        gl_Position = vec4(aVertexPosition.x, aVertexPosition.y, 0.0, 1.0);
-        vTextureCoord = aTextureCoord;
-        vColor = aVertexColor / vec4(255,255,255,255);
-    }
-  `
-  fragmentShaderCode = 
-  `
-    precision mediump float;
-
-    varying vec2 vTextureCoord;
-    varying vec4 vColor;
-
-    uniform sampler2D uSampler;
-
-    void main(void) {
-      gl_FragColor = vec4(texture2D(uSampler, vTextureCoord) * vColor);
-    }
-  `
+  //shader uniforms
+    sampler2D uSampler;
 
   //compile shader and return a shader program
   shaderProgram = gl2D.compileShader(vertexShaderCode,fragmentShaderCode)
