@@ -2,6 +2,7 @@
 
 class WebGL2DContext {
   constructor(canvas,size) {
+    this.canvas = canvas;
     this.gl = null;
     this.shaderProgram = null;
     this.vertexPosition = [];
@@ -32,8 +33,7 @@ class WebGL2DContext {
     this.vertexColorBuffer = this.gl.createBuffer();
     this.vertexTextureCoordBuffer = this.gl.createBuffer();
     this.vertexIndexBuffer = this.gl.createBuffer();
-    this.gl.viewportWidth = canvas.width;
-    this.gl.viewportHeight = canvas.height;
+
 
     if (size === void 0)
       size = 200000;
@@ -238,6 +238,8 @@ WebGL2DContext.prototype.textureFromString = function (string, font, size) {
   return texture;
 }
 WebGL2DContext.prototype.startScene = function () {
+  this.gl.viewportWidth = this.canvas.width;
+  this.gl.viewportHeight = this.canvas.height;
   this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
   this.gl.clear(this.gl.COLOR_BUFFER_BIT);
   // this.vertexPosition = [];
