@@ -1,7 +1,7 @@
 "use strict";
 
 class WebGL2DContext {
-  constructor(canvas,size) {
+  constructor(canvas, size) {
     this.canvas = canvas;
     this.gl = null;
     this.shaderProgram = null;
@@ -25,9 +25,19 @@ class WebGL2DContext {
 
     this.matrix = new Matrix();
 
+    if (canvas === void 0)
+      return;
 
     this.gl = canvas.getContext("webgl2", { antialias: false, depth: false });
-    if (this.gl === void 0 || this.gl === null) this.gl = canvas.getContext("webgl", { antialias: false, depth: false });
+    if (this.gl === void 0 || this.gl === null) {
+      this.gl = canvas.getContext("webgl", { antialias: false, depth: false });
+      console.warn("Can not initialize WebGL2, try switching to WebGL")
+    }
+    if (this.gl === void 0 || this.gl === null) {
+      console.error("Can not initialize WebGL!");
+      return;
+    }
+
     let gl = this.gl;
     this.vertexPositionBuffer = this.gl.createBuffer();
     this.vertexColorBuffer = this.gl.createBuffer();
@@ -165,6 +175,8 @@ WebGL2DContext.prototype.textureFromFile = function (path) {
   texture = this.gl.createTexture();
   texture.image = new Image();
   let _this = this;
+
+  texture.onload = () => { }
   texture.image.onload = function () {
     let canvas = document.createElement("canvas");
     let context = canvas.getContext("2d");
@@ -184,6 +196,10 @@ WebGL2DContext.prototype.textureFromFile = function (path) {
     texture.imgheight = texture.image.height;
     texture.index = _this.textureCounter;
     _this.textureCounter++
+    texture.onload();
+
+    if (texture.width == 0)
+      console.error("can not load texture from " + location.pathname + " , " + path)
   }
   texture.image.src = path;
   return texture;
@@ -210,6 +226,7 @@ WebGL2DContext.prototype.textureFromPixelArray = function (dataArray, width, hei
   this.textureCounter++
   return texture;
 }
+/*
 WebGL2DContext.prototype.textureFromString = function (string, font, size) {
   let gl = this.gl;
   let texture
@@ -237,6 +254,7 @@ WebGL2DContext.prototype.textureFromString = function (string, font, size) {
 
   return texture;
 }
+*/
 WebGL2DContext.prototype.startScene = function () {
   this.gl.viewportWidth = this.canvas.width;
   this.gl.viewportHeight = this.canvas.height;
@@ -530,9 +548,9 @@ WebGL2DContext.prototype.endScene = function () {
 
   this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.vertexIndexBuffer);
   if (this.bufferCreatet === false) this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, this.vertexIndex, this.gl.DYNAMIC_DRAW);
-  else this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, this.vertexIndex, 0, this.IndexOffset);
+  else this.gl.bufferSubData(this.gl.ELEMENT_ARRAY_BUFFER, 0, this.vertexIndex, 0, this.IndexOffset*3);
 
-  this.bufferCreatet = false;
+  this.bufferCreatet = true;
 }
 WebGL2DContext.prototype.createBuffer = function (size) {
 
@@ -592,7 +610,7 @@ Matrix.prototype.apply = function (dst, width, height) {
           result[i + 1] *= list[im].sy;
           break;
         case 2:
-          let sin=list[im].rs,cos=list[im].rc,x = result[i],y=result[i + 1]
+          let sin = list[im].rs, cos = list[im].rc, x = result[i], y = result[i + 1]
           result[i] = x * cos - y * sin;
           result[i + 1] = x * sin + y * cos;
           break;
