@@ -572,50 +572,112 @@ WebGL2DContext.prototype.renderScene = function () {
 }
 
 
+class TransformBuffer {
+  constructor() {
+    this.commands = [];
+  }
+}
+TransformBuffer.prototype.translate = function (x, y) {
+  this.commands[this.commands.length] = { t: 0, tx: x, ty: y };
+}
+TransformBuffer.prototype.scale = function (x, y) {
+  this.commands[this.commands.length] = { t: 1, sx: x, sy: y };
+}
+TransformBuffer.prototype.rotate = function (angle) {
+  let sin = Math.sin(angle * 3.14159265 / 180), cos = Math.cos(angle * 3.14159265 / 180);
+  this.commands[this.commands.length] = { t: 2, rs: sin, rc: cos };
+}
+TransformBuffer.prototype.reset = function () {
+  this.commands = [];
+}
+TransformBuffer.prototype.apply = function (dst, width, height) {
+  let sceneWidth = width * 0.5, sceneHeight = height * 0.5;
+  let max = dst.length;
+
+  let result = new Float32Array(dst.length);
+  let commands = this.commands;
+  for (let i = 0; i < max; i += 2) {
+    result[i] = dst[i]; result[i + 1] = dst[i + 1];
+    for (let im = 0; im < commands.length; im++) {
+      switch (commands[im].t) {
+        case 0:
+          result[i] += commands[im].tx;
+          result[i + 1] += commands[im].ty;
+          break;
+        case 1:
+          result[i] *= commands[im].sx;
+          result[i + 1] *= commands[im].sy;
+          break;
+        case 2:
+          let sin = commands[im].rs, cos = commands[im].rc, x = result[i], y = result[i + 1]
+          result[i] = x * cos - y * sin;
+          result[i + 1] = x * sin + y * cos;
+          break;
+      }
+    }
+    result[i] = -1 + result[i] * 1 / sceneWidth;
+    result[i + 1] = +1 - result[i + 1] * 1 / sceneHeight;
+  }
+  return result;
+}
+
 class Matrix {
   constructor() {
-    this.list = [];
+    this.xsc=1;
+    this.xsk=0;
+    this.ysk=0;
+    this.ysc=1;
+    this.xmo=0;
+    this.ymo=0;
   }
 }
 
 Matrix.prototype.translate = function (x, y) {
-  this.list[this.list.length] = { t: 0, tx: x, ty: y };
+  this.xmo+=x;
+  this.ymo+=y;
 }
 Matrix.prototype.scale = function (x, y) {
-  this.list[this.list.length] = { t: 1, sx: x, sy: y };
+  this.xsc*=x;
+  this.ysc*=y;
+}
+Matrix.prototype.shear = function (x, y) {
+  this.xsk+=x;
+  this.ysk+=y;
 }
 Matrix.prototype.rotate = function (angle) {
-  let sin = Math.sin(angle * 3.14159265 / 180), cos = Math.cos(angle * 3.14159265 / 180);
-  this.list[this.list.length] = { t: 2, rs: sin, rc: cos };
+  let cos=Math.cos(angle*Math.PI / 180);
+  let sin=Math.sin(angle*Math.PI / 180);
+  this.transform(cos, sin, -sin, cos, 0, 0);
 }
 Matrix.prototype.reset = function () {
-  this.list = [];
+  this.xsc=1;this.xsk=0;this.ysk=0;this.ysc=1;this.xmo=0;this.ymo=0;
+}
+Matrix.prototype.transform = function (xsc,xsk,ysk,ysc,xmo,ymo) {
+  this.xsc*=xsc;this.xsk+=xsk;this.ysk+=ysk;this.ysc*=ysc;this.xmo+=xmo;this.ymo+=ymo;
+}
+Matrix.prototype.setTransform = function (xsc,xsk,ysk,ysc,xmo,ymo) {
+  this.xsc=xsc;this.xsk=xsk;this.ysk=ysk;this.ysc=ysc;this.xmo=xmo;this.ymo=ymo;
 }
 Matrix.prototype.apply = function (dst, width, height) {
   let sceneWidth = width * 0.5, sceneHeight = height * 0.5;
   let max = dst.length;
 
   let result = new Float32Array(dst.length);
-  let list = this.list;
+  let list = this.commands;
   for (let i = 0; i < max; i += 2) {
     result[i] = dst[i]; result[i + 1] = dst[i + 1];
-    for (let im = 0; im < list.length; im++) {
-      switch (list[im].t) {
-        case 0:
-          result[i] += list[im].tx;
-          result[i + 1] += list[im].ty;
-          break;
-        case 1:
-          result[i] *= list[im].sx;
-          result[i + 1] *= list[im].sy;
-          break;
-        case 2:
-          let sin = list[im].rs, cos = list[im].rc, x = result[i], y = result[i + 1]
-          result[i] = x * cos - y * sin;
-          result[i + 1] = x * sin + y * cos;
-          break;
-      }
-    }
+
+    let x = result[i],y = result[i+1];
+    
+    result[i+1] *=this.ysc;
+    result[i] *=this.xsc;
+
+    result[i] +=y*this.ysk;
+    result[i+1] +=x*this.xsk;
+    
+    result[i] +=this.xmo;
+    result[i+1] +=this.ymo;
+
     result[i] = -1 + result[i] * 1 / sceneWidth;
     result[i + 1] = +1 - result[i + 1] * 1 / sceneHeight;
   }
