@@ -459,6 +459,8 @@ WebGL2DContext.prototype.drawSquare = function (texture, src, dst, color) {
 
 }
 WebGL2DContext.prototype.drawImage = function (texture, src, dst, color) {
+  if (color == null)
+    color = [255,255,255,255];
   let gl = this.gl;
   let IndexOffset = this.IndexOffset;
   let bufferOffset = this.bufferOffset;
@@ -590,6 +592,15 @@ TransformBuffer.prototype.rotate = function (angle) {
 TransformBuffer.prototype.reset = function () {
   this.commands = [];
 }
+Matrix.prototype.clone = function(){
+  let clone = new TransformBuffer()
+  for (let i = 0;i<this.commands.length;i++)
+    clone.commands[i] = {
+      t:this.commands[i].t,tx:this.commands[i].tx,ty:this.commands[i].ty,sx:this.commands[i].sx,
+      sy:this.commands[i].sy,rs:this.commands[i].rs,rc:this.commands[i].rc
+    }
+  return clone;
+}
 TransformBuffer.prototype.apply = function (dst, width, height) {
   let sceneWidth = width * 0.5, sceneHeight = height * 0.5;
   let max = dst.length;
@@ -658,12 +669,16 @@ Matrix.prototype.transform = function (xsc,xsk,ysk,ysc,xmo,ymo) {
 Matrix.prototype.setTransform = function (xsc,xsk,ysk,ysc,xmo,ymo) {
   this.xsc=xsc;this.xsk=xsk;this.ysk=ysk;this.ysc=ysc;this.xmo=xmo;this.ymo=ymo;
 }
+Matrix.prototype.clone = function(){
+  let clone = new Matrix()
+  clone.xsc=this.xsc; clone.xsk=this.xsk; clone.ysk=this.ysk; clone.ysc=this.ysc; clone.xmo=this.xmo; clone.ymo=this.ymo;
+  return clone;
+}
 Matrix.prototype.apply = function (dst, width, height) {
   let sceneWidth = width * 0.5, sceneHeight = height * 0.5;
   let max = dst.length;
 
   let result = new Float32Array(dst.length);
-  let list = this.commands;
   for (let i = 0; i < max; i += 2) {
     result[i] = dst[i]; result[i + 1] = dst[i + 1];
 

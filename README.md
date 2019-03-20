@@ -34,7 +34,7 @@ render the image<br>
   //clear the buffer
   gl2D.startScene();
   
-  //add image to render list //parameter(texture,src:[posX,posY,width,height],dst:[posX,posY,width,height],color:[r,g,b,a])
+  //add image to render list //parameter(texture,src:[posX,posY,width,height],dst:[posX,posY,width,height],[color:[r,g,b,a]])
   gl2D.drawImage(texture,[0,0,64,64],[64,64,64,64],[255,255,255,255]);
 
   //bind buffers
