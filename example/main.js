@@ -23,6 +23,8 @@ let lastDate = 0;
 let mouseX = 0;
 let mouseY = 0;
 
+let texture;
+
 let stats;
 function main() {
   stats = new Stats();
@@ -52,6 +54,7 @@ function loadImages() {
   testTexture2 = gl2D.textureFromFile("./example/assets/test2.png");
   treeTexture = gl2D.textureFromFile("./example/assets/tree.png");
   groundTexture = gl2D.textureFromFile("./example/assets/ground.png");
+  texture = gl2D.textureFromPixelArray(([255, 255, 255,  0, 255, 255,  255, 0, 255,  255, 255, 0]), 2, 2);
 }
 
 function render() {

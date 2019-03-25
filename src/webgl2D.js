@@ -22,6 +22,7 @@ class WebGL2DContext {
     this.textureOffset = 0;
     this.curOffset = 0;
     this.textureCounter = 0;
+    this.isWebGl2 = true;
 
     this.matrix = new Matrix();
 
@@ -32,6 +33,7 @@ class WebGL2DContext {
     if (this.gl === void 0 || this.gl === null) {
       this.gl = canvas.getContext("webgl", { antialias: false, depth: false });
       console.warn("Can not initialize WebGL2, try switching to WebGL")
+      this.isWebGl2 = false;
     }
     if (this.gl === void 0 || this.gl === null) {
       console.error("Can not initialize WebGL!");
@@ -174,28 +176,29 @@ WebGL2DContext.prototype.textureFromFile = function (path) {
   let texture
   texture = this.gl.createTexture();
   texture.image = new Image();
-  let _this = this;
+
+  this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+  this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, 1,1,0,this.gl.RGBA, this.gl.UNSIGNED_BYTE, new Uint8Array([255,255,255,255]));
 
   texture.onload = () => { }
-  texture.image.onload = function () {
+  texture.image.onload = () => {
     let canvas = document.createElement("canvas");
     let context = canvas.getContext("2d");
     context.imageSmoothingEnabled = false;//Chrome
     context.mozImageSmoothingEnabled = false;//Firefox
-    canvas.width = _this.pow(texture.image.width);
-    canvas.height = _this.pow(texture.image.height);
+    canvas.width = this.pow(texture.image.width);
+    canvas.height = this.pow(texture.image.height);
     context.drawImage(texture.image, 0, 0, texture.image.width, texture.image.height);
-    _this.gl.bindTexture(_this.gl.TEXTURE_2D, texture);
-    _this.gl.texImage2D(_this.gl.TEXTURE_2D, 0, _this.gl.RGBA, _this.gl.RGBA, _this.gl.UNSIGNED_BYTE, canvas);
-    _this.gl.texParameteri(_this.gl.TEXTURE_2D, _this.gl.TEXTURE_MAG_FILTER, _this.gl.NEAREST);
-    _this.gl.texParameteri(_this.gl.TEXTURE_2D, _this.gl.TEXTURE_MIN_FILTER, _this.gl.NEAREST);
-    _this.gl.bindTexture(_this.gl.TEXTURE_2D, null);
+    this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, canvas);
+    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
+    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
     texture.width = canvas.width;
     texture.height = canvas.height;
     texture.imgwidth = texture.image.width;
     texture.imgheight = texture.image.height;
-    texture.index = _this.textureCounter;
-    _this.textureCounter++
+    texture.index = this.textureCounter;
+    this.textureCounter++
     texture.onload();
 
     if (texture.width == 0)
@@ -204,68 +207,45 @@ WebGL2DContext.prototype.textureFromFile = function (path) {
   texture.image.src = path;
   return texture;
 }
-WebGL2DContext.prototype.textureFromPixelArray = function (dataArray, width, height) {
+WebGL2DContext.prototype.textureFromPixelArray = function (data, width, height) {
+  let src;
+  if (data.length/4<width*height){
+    let size = width*height;
+    src = new Uint8Array(size*4)
+    for (let i=0;i<size;i++){
+      src[i*4+0]=data[i*3+0];
+      src[i*4+1]=data[i*3+1];
+      src[i*4+2]=data[i*3+2];
+      src[i*4+3]=255;
+    }
+  }
+  else{
+    src = new Uint8Array(data);
+  }
   let gl = this.gl;
-  let type = this.gl.RGB;
-  // if (dataArray.lenght / (width * height)==3) type = this.gl.RGB;
-  // else type = this.gl.RGBA;
   let texture = this.gl.createTexture();
   this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
-  this.gl.texImage2D(this.gl.TEXTURE_2D, 0, type, width, height, 0, type, this.gl.UNSIGNED_BYTE, dataArray);
-  this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
-  this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+  this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, width, height, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, src);
   this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
   this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
-  this.gl.generateMipmap(this.gl.TEXTURE_2D);
-  this.gl.bindTexture(this.gl.TEXTURE_2D, null)
   texture.width = width;
   texture.height = height;
-  texture.imgwidth = width;
-  texture.imgheight = height;
-  texture.index = this.textureCounter;
-  this.textureCounter++
-  return texture;
-}
-/*
-WebGL2DContext.prototype.textureFromString = function (string, font, size) {
-  let gl = this.gl;
-  let texture
-  texture = this.gl.createTexture();
-
-  let canvas = document.createElement("canvas");
-  let context = canvas.getContext("2d");
-  context.imageSmoothingEnabled = false;//Chrome
-  context.mozImageSmoothingEnabled = false;//Firefox
-  canvas.width = this.pow(512);
-  canvas.height = this.pow(512);
-  context.drawImage(image, 0, 0, image.width, image.height);
-
-  this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
-  this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, canvas);
-  this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
-  this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
-  this.gl.bindTexture(this.gl.TEXTURE_2D, null);
-  texture.width = canvas.width;
-  texture.height = canvas.height;
-  texture.imgwidth = image.width;
-  texture.imgheight = image.height;
   texture.index = this.textureCounter;
   this.textureCounter++
 
+  if (texture.width == 0)
+    console.error("can not create texture from source")
   return texture;
 }
-*/
+WebGL2DContext.prototype.deleteTexture = function(texture){
+  this.gl.deleteTexture(texture)
+}
+
 WebGL2DContext.prototype.startScene = function () {
   this.gl.viewportWidth = this.canvas.width;
   this.gl.viewportHeight = this.canvas.height;
   this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
   this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-  // this.vertexPosition = [];
-  // this.vertexTextureCoord = [];
-  // this.vertexColor = [];
-  // this.vertexIndex = [];
-  // this.textureList = [];
-  // this.textureContinuous = [];
 
   this.IndexOffset = 0;
   this.bufferOffset = 0;
@@ -592,7 +572,7 @@ TransformBuffer.prototype.rotate = function (angle) {
 TransformBuffer.prototype.reset = function () {
   this.commands = [];
 }
-Matrix.prototype.clone = function(){
+TransformBuffer.prototype.clone = function(){
   let clone = new TransformBuffer()
   for (let i = 0;i<this.commands.length;i++)
     clone.commands[i] = {
