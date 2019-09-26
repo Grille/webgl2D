@@ -1,7 +1,8 @@
 "use strict";
 
 class WebGL2DContext {
-  constructor(canvas, size) {
+  constructor(canvas, obj = {}) {
+    let { size = 200000, antialias = false, smoothing = false } = obj;
     this.canvas = canvas;
     this.gl = null;
     this.shaderProgram = null;
@@ -23,15 +24,17 @@ class WebGL2DContext {
     this.curOffset = 0;
     this.textureCounter = 0;
     this.isWebGl2 = true;
+    this.antialias = antialias;
+    this.filter = 0;
 
     this.matrix = new Matrix();
 
     if (canvas === void 0)
       return;
 
-    this.gl = canvas.getContext("webgl2", { antialias: false, depth: false });
+    this.gl = canvas.getContext("webgl2", { antialias, depth: false });
     if (this.gl === void 0 || this.gl === null) {
-      this.gl = canvas.getContext("webgl", { antialias: false, depth: false });
+      this.gl = canvas.getContext("webgl", { antialias, depth: false });
       console.warn("Can not initialize WebGL2, try switching to WebGL")
       this.isWebGl2 = false;
     }
@@ -40,15 +43,15 @@ class WebGL2DContext {
       return;
     }
 
-    let gl = this.gl;
+    if (smoothing === true)
+      this.filter = this.gl.LINEAR;
+    else
+      this.filter = this.gl.NEAREST;
+
     this.vertexPositionBuffer = this.gl.createBuffer();
     this.vertexColorBuffer = this.gl.createBuffer();
     this.vertexTextureCoordBuffer = this.gl.createBuffer();
     this.vertexIndexBuffer = this.gl.createBuffer();
-
-
-    if (size === void 0)
-      size = 200000;
 
     this.vertexPosition = new Float32Array(size * 2 * 2);
     this.vertexTextureCoord = new Float32Array(size * 2 * 2);
@@ -159,8 +162,8 @@ WebGL2DContext.prototype.textureFromImage = function (image) {
 
   this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
   this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, canvas);
-  this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
-  this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
+  this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.filter);
+  this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.filter);
   this.gl.bindTexture(this.gl.TEXTURE_2D, null);
   texture.width = canvas.width;
   texture.height = canvas.height;
@@ -191,8 +194,8 @@ WebGL2DContext.prototype.textureFromFile = function (path) {
     context.drawImage(texture.image, 0, 0, texture.image.width, texture.image.height);
     this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
     this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, canvas);
-    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
-    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
+    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.filter);
+    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.filter);
     texture.width = canvas.width;
     texture.height = canvas.height;
     texture.imgwidth = texture.image.width;
@@ -226,8 +229,8 @@ WebGL2DContext.prototype.textureFromPixelArray = function (data, width, height) 
   let texture = this.gl.createTexture();
   this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
   this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, width, height, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, src);
-  this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
-  this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
+  this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.filter);
+  this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.filter);
   texture.width = width;
   texture.height = height;
   texture.index = this.textureCounter;

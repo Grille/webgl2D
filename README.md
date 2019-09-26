@@ -1,6 +1,5 @@
 # webgl2D
-2d webgl library
-<br>
+2d webgl library<br>
 ## Features
 Easy and fast drawing images with webGL<br>
 matrix functionality<br>
@@ -12,7 +11,15 @@ Add webgl2D.js to you files<br>
 get context with webGL2DStart<br>
 ````js
   let canvas = document.getElementById("canvas");
-  let gl2D = new WebGL2DContext(canvas);
+
+  //options for WebGL2D context
+  obj = {
+    antialias: false, //enable WebGL antialiasing
+    smoothing: false, //enable linear image filtering.
+  }
+
+  //create new WebGL context from canvas and optional options
+  let gl2D = new WebGL2DContext(canvas, obj);
 ````
 load a texture<br>
 ````js
@@ -26,7 +33,7 @@ load a texture<br>
 
   //or from Uint8Array 
   //whether it is RGB or RGBA is automatically determined
-  //parameter(pixelArray,width,height);
+  //parameter(pixelArray, width, height);
   texture = gl2D.textureFromPixelArray(new Uint8Array(pixelArray),64,64);
 ````
 render the image<br>
