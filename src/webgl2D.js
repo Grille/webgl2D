@@ -2,7 +2,7 @@
 
 class WebGL2DContext {
   constructor(canvas, obj = {}) {
-    let { size = 200000, antialias = false, smoothing = false } = obj;
+    let { size = 200000, antialias = false, smoothing = false, blending = true } = obj;
     this.canvas = canvas;
     this.gl = null;
     this.shaderProgram = null;
@@ -60,43 +60,47 @@ class WebGL2DContext {
     this.textureList = [];
     this.textureContinuous = [];
 
-    this.useShader(
-      this.compileShader(
-        `
-      attribute vec2 aVertexPosition;
-      attribute vec2 aTextureCoord;
-      attribute vec4 aVertexColor;
+    let vert = `
+    attribute vec2 aVertexPosition;
+    attribute vec2 aTextureCoord;
+    attribute vec4 aVertexColor;
 
-      varying vec2 vTextureCoord;
-      varying vec4 vColor;
+    varying vec2 vTextureCoord;
+    varying vec4 vColor;
 
-      void main(void) {
-          gl_Position = vec4(aVertexPosition.x, aVertexPosition.y, 0.0, 1.0);
-          vTextureCoord = aTextureCoord;
-          vColor = aVertexColor / vec4(255,255,255,255);
-      }
-      `
-        ,
-        `
-      precision mediump float;
+    void main(void) {
+        gl_Position = vec4(aVertexPosition.x, aVertexPosition.y, 0.0, 1.0);
+        vTextureCoord = aTextureCoord;
+        vColor = aVertexColor / vec4(255,255,255,255);
+    }
+    `
+    let frag = `
+    precision mediump float;
 
-      varying vec2 vTextureCoord;
-      varying vec4 vColor;
+    varying vec2 vTextureCoord;
+    varying vec4 vColor;
 
-      uniform sampler2D uSampler;
+    uniform sampler2D uSampler;
 
-      void main(void) {
-        gl_FragColor = vec4(texture2D(uSampler, vTextureCoord) * vColor);
-      }
-      `
-      )
-    );
+    void main(void) {
+      vec4 color = vec4(texture2D(uSampler, vTextureCoord) * vColor);
+      ${blending === true ? '' : 'if (color.a < 0.5) discard;\n'}
+      gl_FragColor = color;
+    }
+    `
+
+    this.useShader(this.compileShader(vert,frag));
 
     this.endScene();
 
     this.gl.disable(this.gl.DEPTH_TEST);
-    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
-    this.gl.enable(this.gl.BLEND);
+    if (blending === true) {
+      this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
+      this.gl.enable(this.gl.BLEND);
+    }
+    else {
+      this.gl.disable(this.gl.BLEND);
+    }
 
     this.emptyTexture = this.textureFromPixelArray(new Uint8Array([255, 255, 255]), 1, 1);
   }

@@ -15,7 +15,8 @@ get context with webGL2DStart<br>
   //options for WebGL2D context
   obj = {
     antialias: false, //enable WebGL antialiasing
-    smoothing: false, //enable linear image filtering.
+    smoothing: false, //enable linear image filtering
+    blending:  true   //enable alpha blending
   }
 
   //create new WebGL context from canvas and optional options
