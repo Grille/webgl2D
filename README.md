@@ -24,8 +24,6 @@ get context with webGL2DStart<br>
 ````
 load a texture<br>
 ````js
-  //texture must be a potency of 2 (32, 64, 128, etc), otherwise it is enlarged when created
-
   //you can create a texture from a file,
   texture = gl2D.textureFromFile("./assets/texture.png");
 
@@ -34,6 +32,7 @@ load a texture<br>
 
   //or from Uint8Array 
   //whether it is RGB or RGBA is automatically determined
+  //width and height must be a potency of 2 (32, 64, 128, etc)
   //parameter(pixelArray, width, height);
   texture = gl2D.textureFromPixelArray(new Uint8Array(pixelArray),64,64);
 ````

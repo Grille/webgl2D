@@ -75,32 +75,28 @@ function render() {
 
   gl2D.matrix.reset();
   gl2D.matrix.rotate(20);
-  //gl2D.matrix.transform(2,0.5,0.5,2,0,0);
+
   gl2D.drawImage(testTexture2, [0, 0, 64, 64], [0, 0, 64, 64], [0, 0, 255, 255]);
   gl2D.drawImage(testTexture2, [0, 0, 64, 64], [64, 0, 64, 64], [0, 100, 255, 255]);
 
-  
   gl2D.matrix = new TransformBuffer();
   let count = 0;
   let mapSize = 64;
   let tileSize = 16;
   let textureSize = 64;
   rotate+=0.2;
-  let rectSrc = [0,0,textureSize,textureSize]
-  let rectDst = [0,0,tileSize,tileSize];
+
+  gl2D.matrix.reset();
+  gl2D.matrix.translate(-tileSize * (mapSize / 2), -tileSize * (mapSize / 2));
+  gl2D.matrix.rotate(rotate);
+  gl2D.matrix.scale(1, 0.5);
+  gl2D.matrix.translate(canvas.width / 2, canvas.height / 2);
+
+  let rectSrc = [0, 0, textureSize, textureSize]
   for (let ix = 0; ix < mapSize; ix++) {
     for (let iy = 0; iy < mapSize; iy++) {
-      gl2D.matrix.reset();
-      gl2D.matrix.translate(ix * tileSize, iy * tileSize);
-      gl2D.matrix.translate(-tileSize*(mapSize/2), -tileSize*(mapSize/2));
-      gl2D.matrix.rotate(rotate);
-      gl2D.matrix.scale(1,0.5);
-      gl2D.matrix.translate(canvas.width/2, canvas.height/2);
-      //gl2D.matrix.translate(32*32, 0);
-      //gl2D.matrix.scale(1,0.5);
-      let r = (ix /mapSize)*255, g = (iy /mapSize)*255, b = 255, a = 255;
-      gl2D.drawImage(groundTexture,[0,0,textureSize,textureSize],[0,0,tileSize,tileSize],[r,g,b,a])
-      //gl2D.drawSquare(groundTexture, [0, 0, textureSize, 0, textureSize, textureSize, 0, textureSize], [0, 0, tileSize, 0, tileSize, tileSize, 0, tileSize], [r, g, b, a, r, g, b, a, r, g, b, a, r, g, b, a]);
+      let r = (ix / mapSize) * 255, g = (iy / mapSize) * 255, b = 255, a = 255;
+      gl2D.drawImage(groundTexture, rectSrc, [ix * tileSize, iy * tileSize, tileSize, tileSize], [r, g, b, a])
       count++;
     }
   }
